@@ -1,0 +1,23 @@
+{
+  "name": "fund-tracking-backend",
+  "version": "1.0.0",
+  "description": "Express backend for Fund-Tracking Project",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jaypowar00/fund-tracking-backend.git"
+  },
+  "author": "StackUnderFlow",
+  "license": "ISC",
+  "homepage": "https://github.com/jaypowar00/fund-tracking-backend#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "nodemon": "^2.0.15",
+    "pg": "^8.7.1"
+  }
+}
