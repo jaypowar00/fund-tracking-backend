@@ -14,6 +14,7 @@
   "license": "ISC",
   "homepage": "https://github.com/jaypowar00/fund-tracking-backend#readme",
   "dependencies": {
+    "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
