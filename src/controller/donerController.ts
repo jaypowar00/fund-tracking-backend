@@ -11,7 +11,7 @@ export class donerController {
     private donerRespository = getRepository(Doners);
 
     private generateDonerAccessToken(doner_id) {
-        let access_token = jwt.sign({doner_id: doner_id}, process.env.FTSECRET_KEY, { expiresIn: '3d' });
+        let access_token = jwt.sign({doner_id: doner_id}, process.env.FTSECRET_KEY, { expiresIn: '1d' });
         console.log('[+] accessToken('+doner_id+'): '+ access_token);
         if (blackListedTokens.includes(access_token))
             blackListedTokens.splice(blackListedTokens.indexOf(access_token), 1);
@@ -177,15 +177,15 @@ export class donerController {
             phone2: phone2,
             meta_wallet_address: meta_wallet_address
         }).then((doner) => {
-            return {
+            return response.json({
                 status: true,
                 message: 'Successfully Registered'
-            }
+            })
         }).catch((err) => {
-            return {
+            return response.json({
                 status: false,
                 message: 'Error: Registration Failed! ('+err.message+')'
-            }
+            })
         });
     }
 
