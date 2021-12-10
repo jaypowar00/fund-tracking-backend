@@ -15,17 +15,15 @@
    "license": "ISC",
    "homepage": "https://github.com/jaypowar00/fund-tracking-backend#readme",
    "dependencies": {
+      "@types/node": "^16.11.12",
       "bcrypt": "^5.0.1",
       "cors": "^2.8.5",
       "dotenv": "^10.0.0",
       "express": "^4.17.1",
       "jsonwebtoken": "^8.5.1",
       "reflect-metadata": "^0.1.10",
-      "typeorm": "0.2.41"
-   },
-   "devDependencies": {
-      "@types/node": "^8.0.29",
-      "ts-node": "3.3.0",
-      "typescript": "3.3.3333"
+      "ts-node": "^10.4.0",
+      "typeorm": "0.2.41",
+      "typescript": "^4.5.3"
    }
 }
