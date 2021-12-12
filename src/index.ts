@@ -23,6 +23,7 @@ createConnection().then(async connection => {
 
     const app = express();
     app.use(express.json());
+    app.use(cors(corsOptions))
     
     const PORT = process.env.PORT || 4000
 
@@ -38,7 +39,7 @@ createConnection().then(async connection => {
     });
 
     app.use(express.urlencoded({extended: true}));
-    app.use(cors(corsOptions))
+    
     
     app.listen(PORT, ()=>console.log('[+] Express server is running at port: '+ PORT));
 
