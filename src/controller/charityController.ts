@@ -25,7 +25,7 @@ export class charityController {
         });
         return {
             status: true,
-            doners: charities
+            charities: charities
         }
     }
 
