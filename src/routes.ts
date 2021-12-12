@@ -30,7 +30,7 @@ export const Routes = [
         action: "logout"
     }, {
         method: "delete",
-        route: "/doner/delete/:id",
+        route: "/doner/delete",
         controller: donerController,
         action: "remove"
     },

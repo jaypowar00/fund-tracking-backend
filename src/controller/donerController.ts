@@ -11,7 +11,7 @@ export class donerController {
     private donerRespository = getRepository(Doners);
 
     private generateDonerAccessToken(doner_id) {
-        let access_token = jwt.sign({doner_id: doner_id}, process.env.FTSECRET_KEY, { expiresIn: '1d' });
+        let access_token = jwt.sign({doner_id: doner_id, ac_type: 'doner'}, process.env.FTSECRET_KEY, { expiresIn: '1d' });
         console.log('[+] accessToken('+doner_id+'): '+ access_token);
         if (blackListedTokens.includes(access_token))
             blackListedTokens.splice(blackListedTokens.indexOf(access_token), 1);
@@ -87,21 +87,28 @@ export class donerController {
                     message: err.message
                 })
             }
-            if (blackListedTokens.includes(token))
+            if (user.ac_type !== "doner") {
                 return response.json({
                     status: false,
-                    message: 'you have been logged out, please login again'
-                })
-            else {
-                let donerData;
-                this.donerRespository.findOne(user.doner_id).then(doner => {
-                    donerData = doner
-                    delete donerData['password'];
-                    return response.json({
-                        status: true,
-                        doner: donerData
-                    });
+                    message: 'Unauthorized Access'
                 });
+            }else {
+                if (blackListedTokens.includes(token))
+                    return response.json({
+                        status: false,
+                        message: 'you have been logged out, please login again'
+                    })
+                else {
+                    let donerData;
+                    this.donerRespository.findOne(user.doner_id).then(doner => {
+                        donerData = doner
+                        delete donerData['password'];
+                        return response.json({
+                            status: true,
+                            doner: donerData
+                        });
+                    });
+                }
             }
         });
     }
@@ -260,26 +267,80 @@ export class donerController {
                     message: err.message
                 })
             }
-            if (blackListedTokens.includes(token))
+            if (user.ac_type !== "doner") {
                 return response.json({
-                    status: true,
-                    message: 'you have already been logged out'
+                    status: false,
+                    message: 'Unauthorized Access'
                 });
-            else {
-                let donerData;
-                this.donerRespository.findOne(user.doner_id).then(doner => {donerData = doner});
-                if (!blackListedTokens.includes(token))
-                    blackListedTokens.push(token);
-                return response.json({
-                    status: true,
-                    message: 'Successfully logged out'
-                })
+            }else {
+                if (blackListedTokens.includes(token))
+                    return response.json({
+                        status: true,
+                        message: 'you have already been logged out'
+                    });
+                else {
+                    let donerData;
+                    this.donerRespository.findOne(user.doner_id).then(doner => {donerData = doner});
+                    if (!blackListedTokens.includes(token))
+                        blackListedTokens.push(token);
+                    return response.json({
+                        status: true,
+                        message: 'Successfully logged out'
+                    })
+                }
             }
         });
     }
 
     async remove(request: Request, response: Response, next: NextFunction) {
-        let donerToRemove = await this.donerRespository.findOne(request.params.id);
-        await this.donerRespository.remove(donerToRemove);
+        
+        const authHeader = request.headers['authorization']
+        const token = authHeader && authHeader.split(' ')[1]
+    
+        if (token == null)
+            return response.json({
+                status: false,
+                message: 'access token is missing in request'
+            })
+        jwt.verify(token, process.env.FTSECRET_KEY, (err, user) => {
+            if(err) {
+                console.log('[+] err:\n');
+                console.log(err.name);
+                if (blackListedTokens.includes(token))
+                    blackListedTokens.splice(blackListedTokens.indexOf(token), 1);
+                return response.json({
+                    status: false,
+                    message: err.message
+                })
+            }
+            if (user.ac_type !== "doner") {
+                return response.json({
+                    status: false,
+                    message: 'Unauthorized Access'
+                });
+            }else {
+                if (blackListedTokens.includes(token))
+                    return response.json({
+                        status: false,
+                        message: 'you have been logged out, please login again!'
+                    });
+                else {
+                    this.donerRespository.findOne(user.doner_id).then((doner) => {
+                        this.donerRespository.remove(doner).then((res) => {
+                            return response.json({
+                                status: true,
+                                message: 'Account Deleted Successfully'
+                            })
+                        }).catch((err) => {
+                            return response.json({
+                                status: false,
+                                message: 'Account Could not be deleted! ('+err.message+')'
+                            });
+                        });
+                    });
+                }
+            }
+        });
+    }
     }
 }

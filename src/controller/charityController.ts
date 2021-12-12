@@ -11,48 +11,11 @@ export class charityController {
     private charityRespository = getRepository(Charity);
 
     private generateCharityAccessToken(charity_id) {
-        let access_token = jwt.sign({charity_id: charity_id}, process.env.FTSECRET_KEY, { expiresIn: '1d' });
+        let access_token = jwt.sign({charity_id: charity_id, ac_type: 'charity'}, process.env.FTSECRET_KEY, { expiresIn: '1d' });
         console.log('[+] accessToken('+charity_id+'): '+ access_token);
         if (blackListedTokens.includes(access_token))
             blackListedTokens.splice(blackListedTokens.indexOf(access_token), 1);
         return access_token;
-    }
-    
-    private authenticateCharity(req) {
-        const authHeader = req.headers['authorization']
-        const token = authHeader && authHeader.split(' ')[1]
-    
-        if (token == null)
-            return {
-                status: false,
-                message: 'access token is missing in request'
-            }
-        jwt.verify(token, process.env.FTSECRET_KEY, (err, user) => {
-            if(err) {
-                console.log('[+] err:\n');
-                console.log(err.name);
-                if (blackListedTokens.includes(token))
-                    blackListedTokens.splice(blackListedTokens.indexOf(token), 1);
-                return {
-                    status: false,
-                    message: err.message
-                }
-            }
-            if (blackListedTokens.includes(token))
-                return {
-                    status: false,
-                    message: 'you have been logged out, please login again'
-                }
-            let res = {
-                status: true,
-                user: user.charity_id
-            };
-            console.log(res);
-            console.log('lol');
-            return new Promise(resolve => {
-                resolve(res);
-              });
-        });
     }
 
     async all(request: Request, response: Response, next: NextFunction) {
@@ -87,21 +50,28 @@ export class charityController {
                     message: err.message
                 })
             }
-            if (blackListedTokens.includes(token))
+            if (user.ac_type !== "charity") {
                 return response.json({
                     status: false,
-                    message: 'you have been logged out, please login again'
-                })
-            else {
-                let charityData;
-                this.charityRespository.findOne(user.charity_id).then(charity => {
-                    charityData = charity
-                    delete charityData['password'];
-                    return response.json({
-                        status: true,
-                        charity: charityData
-                    });
+                    message: 'Unauthorized Access'
                 });
+            }else {
+                if (blackListedTokens.includes(token))
+                    return response.json({
+                        status: false,
+                        message: 'you have been logged out, please login again'
+                    })
+                else {
+                    let charityData;
+                    this.charityRespository.findOne(user.charity_id).then(charity => {
+                        charityData = charity
+                        delete charityData['password'];
+                        return response.json({
+                            status: true,
+                            charity: charityData
+                        });
+                    });
+                }
             }
         });
     }
@@ -264,20 +234,27 @@ export class charityController {
                     message: err.message
                 })
             }
-            if (blackListedTokens.includes(token))
+            if (user.ac_type !== "charity") {
                 return response.json({
-                    status: true,
-                    message: 'you have already been logged out'
+                    status: false,
+                    message: 'Unauthorized Access'
                 });
-            else {
-                let charityData;
-                this.charityRespository.findOne(user.charity_id).then(charity => {charityData = charity});
-                if (!blackListedTokens.includes(token))
-                    blackListedTokens.push(token);
-                return response.json({
-                    status: true,
-                    message: 'Successfully logged out'
-                })
+            }else {
+                if (blackListedTokens.includes(token))
+                    return response.json({
+                        status: true,
+                        message: 'you have already been logged out'
+                    });
+                else {
+                    let charityData;
+                    this.charityRespository.findOne(user.charity_id).then(charity => {charityData = charity});
+                    if (!blackListedTokens.includes(token))
+                        blackListedTokens.push(token);
+                    return response.json({
+                        status: true,
+                        message: 'Successfully logged out'
+                    })
+                }
             }
         });
     }
@@ -323,7 +300,5 @@ export class charityController {
                 });
             }
         });
-
-        
     }
 }
