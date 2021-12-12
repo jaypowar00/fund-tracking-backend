@@ -186,7 +186,8 @@ export class donerController {
         }).then((doner) => {
             return response.json({
                 status: true,
-                message: 'Successfully Registered'
+                message: 'Successfully Registered',
+                access_token: this.generateDonerAccessToken(doner.doner_id)
             })
         }).catch((err) => {
             return response.json({
