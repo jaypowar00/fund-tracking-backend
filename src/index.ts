@@ -8,6 +8,19 @@ require('dotenv/config');
 
 createConnection().then(async connection => {
 
+    const whitelist = ["http://localhost:3000"]
+    const corsOptions = {
+    origin: function (origin, callback) {
+        if (!origin || whitelist.indexOf(origin) !== -1) {
+        callback(null, true)
+        } else {
+        callback(new Error("Not allowed by CORS"))
+        }
+    },
+    credentials: true,
+    }
+    
+
     const app = express();
     app.use(express.json());
     
@@ -25,7 +38,7 @@ createConnection().then(async connection => {
     });
 
     app.use(express.urlencoded({extended: true}));
-    app.use(cors());
+    app.use(cors(corsOptions))
     
     app.listen(PORT, ()=>console.log('[+] Express server is running at port: '+ PORT));
 
