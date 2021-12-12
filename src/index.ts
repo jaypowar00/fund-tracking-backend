@@ -8,24 +8,25 @@ require('dotenv/config');
 
 createConnection().then(async connection => {
 
-    const whitelist = ["http://localhost:3000"]
+    const envDomains = process.env.FT_CORS_DOMAINS || "";
+    const whitelist = envDomains.split(",").map(item => item.trim());
     const corsOptions = {
-    origin: function (origin, callback) {
-        if (!origin || whitelist.indexOf(origin) !== -1) {
-        callback(null, true)
-        } else {
-        callback(new Error("Not allowed by CORS"))
-        }
-    },
-    credentials: true,
+        origin: function (origin, callback) {
+            if (!origin || whitelist.indexOf(origin) !== -1) {
+                callback(null, true)
+            } else {
+                callback(new Error("Not allowed by CORS"))
+            }
+        },
+        credentials: true,
     }
-    
 
     const app = express();
     app.use(express.json());
     app.use(cors(corsOptions))
     
-    const PORT = process.env.PORT || 4000
+    const PORT = process.env.PORT || 4000;
+    app.use(express.urlencoded({extended: true}));
 
     Routes.forEach(route => {
         (app as any)[route.method](route.route, (req: Request, res: Response, next: Function) => {
@@ -38,8 +39,6 @@ createConnection().then(async connection => {
         });
     });
 
-    app.use(express.urlencoded({extended: true}));
-    
     
     app.listen(PORT, ()=>console.log('[+] Express server is running at port: '+ PORT));
 
