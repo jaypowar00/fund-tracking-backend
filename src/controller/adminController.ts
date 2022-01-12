@@ -69,4 +69,75 @@ export class adminController {
         });
     }
     
+    async responseToCharity(request: Request, response: Response, next: NextFunction) {
+        const { body } = request;
+        const { accepted, username } = body;
+
+        // jwt verification
+        const authHeader = request.headers['authorization']
+        const token = authHeader && authHeader.split(' ')[1]
+    
+        if (token == null)
+            return response.json({
+                status: false,
+                message: 'access token is missing in request'
+            })
+        jwt.verify(token, process.env.FTSECRET_KEY, (err, user) => {
+            if(err) {
+                console.log('[+] err:\n');
+                console.log(err.name);
+                if (blackListedTokens.includes(token))
+                    blackListedTokens.splice(blackListedTokens.indexOf(token), 1);
+                return response.json({
+                    status: false,
+                    message: err.message
+                })
+            }
+            if (blackListedTokens.includes(token))
+                return response.json({
+                    status: false,
+                    message: 'you are not logged in, please login and try again later'
+                });
+            else {
+                this.userRespository.findOne(user.user_id).then(user => {
+                    if(!user) {
+                        return response.json({
+                            status: false,
+                            message: 'User does not exists!'
+                        });
+                    }
+                });
+                this.userRespository.findOne({where: {userRole: UserRole.CHARITY,username: username}, relations: ['charityDetails']}).then(user => {
+                    if(!user)
+                        return response.json({
+                            status: false,
+                            message: "Target Charity Does not exists anymore...",
+                        })
+                    else {
+                        this.charityRespository.update(user.charityDetails.charity_id, {verified: accepted}).then((updatedCharityDetails) => {
+                            return response.json({
+                                status: true,
+                                message: 'Charity successfully verified!'
+                            });
+                        }).catch(err => {
+                            if(err)
+                                return response.json({
+                                    status: false,
+                                    message: 'Failed to verify Target Charity! ('+err.message+')'
+                                });
+                        });
+                    }
+                    return response.json({
+                        status: true,
+                        message: null,
+                    })
+                }).catch(err => {
+                    return response.json({
+                        status: false,
+                        message: 'Something went wrong while looking for Target Charity, try again later. ('+err.message+')'
+                    });
+                })
+            }
+        });
+    }
 }
