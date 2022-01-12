@@ -64,6 +64,7 @@ export class userController {
         charities.forEach((charity, index) => {
             delete charity.password
         });
+        
         return {
             status: true,
             charities: charities
@@ -201,6 +202,7 @@ export class userController {
                 status: false,
                 message: 'username already taken'
             };
+        console.log('[+] registering user')
         this.userRespository.save({
             name: name,
             email: email,
@@ -215,6 +217,7 @@ export class userController {
             userRole: (account_type == 'charity') ? UserRole.CHARITY : (account_type == 'admin') ? UserRole.ADMIN : UserRole.DONER,
         }).then((user) => {
             if(account_type == 'charity') {
+                console.log('[+] registering charity')
                 this.charityRespository.save({
                     user: user,
                     founded_in: founded_in,
@@ -234,6 +237,7 @@ export class userController {
                         });
                 })
             }else {
+                console.log('[+] registering doner')
                 this.donerRespository.save({
                     user: user,
                     dob: dob,
