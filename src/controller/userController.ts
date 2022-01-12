@@ -71,7 +71,7 @@ export class userController {
     }
     async getOneCharity(request: Request, response: Response, next: NextFunction) {
 
-        let charity = (await this.userRespository.findOne({username: request.params.username}));
+        let charity = (await this.userRespository.findOne({where: {username: request.params.username}, relations: ['charityDetails']}));
         delete charity.password
         return {
             status: true,
