@@ -89,7 +89,7 @@ export class userController {
         }
     }
 
-    async profile(request: Request, response: Response, next: NextFunction) {
+    async getProfile(request: Request, response: Response, next: NextFunction) {
         // jwt verification
         const authHeader = request.headers['authorization']
         const token = authHeader && authHeader.split(' ')[1]
@@ -160,6 +160,144 @@ export class userController {
                         });
                     }
 
+                }).catch(err => {
+                    return response.json({
+                        status: false,
+                        message: 'something went wrong, try again later. ('+err.message+')'
+                    });
+                });
+            }
+        });
+    }
+
+    async updateProfile(request: Request, response: Response, next: NextFunction) {
+        const { body } = request;
+        let {
+            name,
+            username,
+            password,
+            dob,
+            description,
+            phone1,
+            phone2,
+            meta_wallet_address,
+            profile_image,
+            founded_in,
+            total_fundings,
+            total_expenditure,
+            tax_exc_cert,
+            total_donations,
+        } = body;
+        let {email} = body;
+        
+        // jwt verification
+        const authHeader = request.headers['authorization']
+        const token = authHeader && authHeader.split(' ')[1]
+    
+        if (token == null)
+            return response.json({
+                status: false,
+                message: 'access token is missing in request'
+            });
+        jwt.verify(token, process.env.FTSECRET_KEY, (err, user) => {
+            if(err) {
+                console.log('[+] err:\n');
+                console.log(err.name);
+                if (blackListedTokens.includes(token))
+                    blackListedTokens.splice(blackListedTokens.indexOf(token), 1);
+                return response.json({
+                    status: false,
+                    message: err.message
+                })
+            }
+        
+            if (blackListedTokens.includes(token))
+                return response.json({
+                    status: false,
+                    message: 'you have been logged out, please login again'
+                })
+            else {
+                this.userRespository.findOne(user.user_id).then((user) => {
+                    let backup_user = user
+                    let account = user.userRole
+                    name = (name)?name:user.name
+                    email = (email)?email:user.email
+                    username = (username)?username:user.username
+                    password = (password)?bcrypt.hashSync(password, bcrypt.genSaltSync(8), null):user.password
+                    description = (description)?description:user.description
+                    phone1 = (phone1)?phone1:user.phone1
+                    phone2 = (phone2)?phone2:user.phone2
+                    meta_wallet_address = (meta_wallet_address)?meta_wallet_address:user.meta_wallet_address
+                    profile_image = (profile_image)?profile_image:user.profile_image
+                    this.userRespository.update(user.user_id, {
+                        name: name,
+                        email: email,
+                        username: username,
+                        password: bcrypt.hashSync(password, bcrypt.genSaltSync(8), null),
+                        description: description,
+                        phone1: phone1,
+                        phone2: phone2,
+                        meta_wallet_address: meta_wallet_address,
+                        profile_image: profile_image
+                    }).then((updatedData => {
+                        if(account == UserRole.CHARITY) {
+                            founded_in = (founded_in)? founded_in:user.charityDetails.founded_in
+                            total_fundings = (total_fundings)? total_fundings:user.charityDetails.total_fundings
+                            total_expenditure = (total_expenditure)? total_expenditure:user.charityDetails.total_expenditure
+                            tax_exc_cert = (tax_exc_cert)? tax_exc_cert:user.charityDetails.tax_exc_cert
+                            this.charityRespository.update(user.charityDetails.charity_id, {
+                                founded_in: founded_in,
+                                total_fundings: total_fundings,
+                                total_expenditure: total_expenditure,
+                                tax_exc_cert: tax_exc_cert
+                            }).then(() => {
+                                return response.json({
+                                    status: true,
+                                    message: 'Profile updated'
+                                });
+                            }, (err) => {
+                                this.userRespository.update(user.user_id, backup_user).then(()=>{
+                                    return response.json({
+                                        status: false,
+                                        message: 'Failed to update profile ('+err.message+')'
+                                    });
+                                })
+                            }).catch((err)=>{
+                                this.userRespository.update(user.user_id, backup_user).then(()=>{
+                                    return response.json({
+                                        status: false,
+                                        message: 'Failed to update profile ('+err.message+')'
+                                    });
+                                })
+                            });
+                        }else if(account == UserRole.DONER) {
+                            dob = (dob)? dob:user.doner.dob
+                            total_donations = (total_donations)? total_donations:user.doner.total_donations
+                            this.donerRespository.update(user.doner.doner_id, {
+                                dob: dob,
+                                total_donations: total_donations
+                            }).then(() => {
+                                return response.json({
+                                    status: true,
+                                    message: 'Profile updated'
+                                });
+                            }, (err) => {
+                                this.userRespository.update(user.user_id, backup_user).then(()=>{
+                                    return response.json({
+                                        status: false,
+                                        message: 'Failed to update profile ('+err.message+')'
+                                    });
+                                })
+                            }).catch((err)=>{
+                                this.userRespository.update(user.user_id, backup_user).then(()=>{
+                                    return response.json({
+                                        status: false,
+                                        message: 'Failed to update profile ('+err.message+')'
+                                    });
+                                })
+                            });
+                        }
+                    }))
                 }).catch(err => {
                     return response.json({
                         status: false,
