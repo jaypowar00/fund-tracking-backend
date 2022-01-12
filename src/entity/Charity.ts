@@ -39,4 +39,10 @@ export class Charity {
     @Column({type: 'integer', nullable: true})
     total_expenditure: number
 
+    @Column({type: 'text', nullable: true})
+    tax_exc_cert: string
+
+    @Column({type: 'text', nullable: true, default: null})
+    profile_image: string
+
 }

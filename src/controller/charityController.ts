@@ -83,7 +83,7 @@ export class charityController {
                     let charityData;
                     this.charityRespository.findOne(user.charity_id).then(charity => {
                         charityData = charity
-                        delete charityData['password'];
+                        delete charityData.password;
                         return response.json({
                             status: true,
                             charity: charityData
@@ -105,7 +105,9 @@ export class charityController {
             phone2,
             meta_wallet_address,
             total_fundings,
-            total_expenditure
+            total_expenditure,
+            tax_exc_cert,
+            profile_image
         } = body;
         let {email} = body;
         if(!email) {
@@ -130,6 +132,12 @@ export class charityController {
             return response.json({
                 status: false,
                 message: 'Error: password can not be blank'
+            });
+        }
+        if(!tax_exc_cert) {
+            return response.json({
+                status: false,
+                message: 'Error: Tax Excemption Certificate must be provided'
             });
         }
         if(!founded_in) {
@@ -165,6 +173,8 @@ export class charityController {
             founded_in: founded_in,
             phone1: phone1,
             phone2: phone2,
+            tax_exc_cert: tax_exc_cert,
+            profile_image: profile_image,
             meta_wallet_address: meta_wallet_address,
             total_fundings: total_fundings,
             total_expenditure: total_expenditure,
@@ -172,7 +182,7 @@ export class charityController {
         }).then((charity) => {
             return response.json({
                 status: true,
-                message: 'Successfully Registered'
+                message: 'Successfully Registered, please wait while your account gets verified'
             })
         }).catch((err) => {
             return response.json({

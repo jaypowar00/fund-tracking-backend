@@ -33,4 +33,7 @@ export class Doners {
     @Column({type: 'integer', nullable: true})
     total_donations: number
 
+    @Column({type: 'text', nullable: true, default: null})
+    profile_image: string
+
 }

@@ -122,7 +122,8 @@ export class donerController {
             dob,
             phone1,
             phone2,
-            meta_wallet_address
+            meta_wallet_address,
+            profile_image
         } = body;
         let {email} = body;
         if(!email) {
@@ -182,6 +183,7 @@ export class donerController {
             dob: dob,
             phone1: phone1,
             phone2: phone2,
+            profile_image: profile_image,
             meta_wallet_address: meta_wallet_address
         }).then((doner) => {
             return response.json({
