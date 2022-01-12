@@ -63,5 +63,10 @@ export const Routes = [
         route: "/charity",
         controller: userController,
         action: "getAllCharity"
+    }, {
+        method: "get",
+        route: "/charity/:username",
+        controller: userController,
+        action: "getOneCharity"
     }
 ];
