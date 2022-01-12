@@ -140,12 +140,6 @@ export class charityController {
                 message: 'Error: Tax Excemption Certificate must be provided'
             });
         }
-        if(!founded_in) {
-            return response.json({
-                status: false,
-                message: 'Error: Founded Time can not be blank'
-            });
-        }
         if(!phone1) {
             return response.json({
                 status: false,
