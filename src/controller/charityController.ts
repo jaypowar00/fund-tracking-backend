@@ -29,6 +29,24 @@ export class charityController {
         }
     }
 
+    async getCharity(request: Request, response: Response, next: NextFunction) {
+        let charity = await this.charityRespository.findOne({username: request.params.username})
+        if(charity != undefined) {
+            delete charity.password;
+            return {
+                status: true,
+                charity: charity,
+                message: null
+            };
+        }else {
+            return {
+                status: false,
+                charity: null,
+                message: 'No such NGO present at the moment'
+            };
+        }
+    }
+
     async one(request: Request, response: Response, next: NextFunction) {
         // jwt verification
         const authHeader = request.headers['authorization']

@@ -47,6 +47,11 @@ export const Routes = [
         controller: charityController,
         action: "one"
     }, {
+        method: "get",
+        route: "/charity/:username",
+        controller: charityController,
+        action: "getCharity"
+    }, {
         method: "post",
         route: "/charity/register",
         controller: charityController,
