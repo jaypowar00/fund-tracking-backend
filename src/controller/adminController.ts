@@ -48,11 +48,21 @@ export class adminController {
                         });
                     }
                 });
-                this.userRespository.find({relations: ["charityDetails"]}).then(users => {
+                this.userRespository.find({where: {userRole: UserRole.CHARITY, charityDetails: { verified: false }}, relations: ["charityDetails"]}).then(users => {
+                    let t_users = []
+                    users.forEach((user, index) => {
+                        let t_user = {};
+                        t_user['name'] = user.name;
+                        t_user['username'] = user.username;
+                        t_user['user_id'] = user.user_id;
+                        t_user['requested_time'] = user.joined_time;
+                        t_user['public_id'] = user.public_id;
+                        t_users.push(t_user);
+                    });
                     return response.json({
                         status: true,
                         message: null,
-                        charities: users
+                        charities: t_users
                     })
                 })
             }

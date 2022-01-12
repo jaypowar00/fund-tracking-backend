@@ -60,11 +60,20 @@ export class userController {
     }
 
     async getAllCharity(request: Request, response: Response, next: NextFunction) {
-        let charities = (await this.userRespository.find({where: {userRole: UserRole.CHARITY} ,relations: ['charityDetails']}));
+        let charities = (await this.userRespository.find({where: {userRole: UserRole.CHARITY, charityDetails: { verified: true }} ,relations: ['charityDetails']}));
         charities.forEach((charity, index) => {
             delete charity.password
+            delete charity.meta_wallet_address
+            delete charity.phone1
+            delete charity.phone2
+            delete charity.userRole
+
+            charity["founded_in"] = charity.charityDetails.founded_in
+            charity["total_fundings"] = charity.charityDetails.total_fundings
+            charity["total_expenditure"] = charity.charityDetails.total_expenditure
+            
+            delete charity.charityDetails
         });
-        
         return {
             status: true,
             charities: charities
