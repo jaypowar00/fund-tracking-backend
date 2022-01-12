@@ -53,8 +53,7 @@ export class User {
     @Column({type: 'date', nullable: true, default: "now()"})
     joined_time: Date = new Date()
 
-    @OneToOne(() => CharityDetails)
-    @JoinColumn()
+    @OneToOne(() => CharityDetails, charityDetails => charityDetails.user)
     charityDetails: CharityDetails
 
     @OneToOne(() => Doners)
@@ -69,7 +68,7 @@ export class CharityDetails {
     @PrimaryGeneratedColumn({type: 'integer'})
     charity_id: number
 
-    @OneToOne(type => User)
+    @OneToOne(type => User, user => user.charityDetails)
     @JoinColumn()
     user: User
 
