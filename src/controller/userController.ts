@@ -89,52 +89,86 @@ export class userController {
         }
     }
 
-    // async one(request: Request, response: Response, next: NextFunction) {
-    //     // jwt verification
-    //     const authHeader = request.headers['authorization']
-    //     const token = authHeader && authHeader.split(' ')[1]
+    async profile(request: Request, response: Response, next: NextFunction) {
+        // jwt verification
+        const authHeader = request.headers['authorization']
+        const token = authHeader && authHeader.split(' ')[1]
     
-    //     if (token == null)
-    //         return response.json({
-    //             status: false,
-    //             message: 'access token is missing in request'
-    //         });
-    //     jwt.verify(token, process.env.FTSECRET_KEY, (err, user) => {
-    //         if(err) {
-    //             console.log('[+] err:\n');
-    //             console.log(err.name);
-    //             if (blackListedTokens.includes(token))
-    //                 blackListedTokens.splice(blackListedTokens.indexOf(token), 1);
-    //             return response.json({
-    //                 status: false,
-    //                 message: err.message
-    //             })
-    //         }
-    //         if (user.ac_type !== "doner") {
-    //             return response.json({
-    //                 status: false,
-    //                 message: 'Unauthorized Access'
-    //             });
-    //         }else {
-    //             if (blackListedTokens.includes(token))
-    //                 return response.json({
-    //                     status: false,
-    //                     message: 'you have been logged out, please login again'
-    //                 })
-    //             else {
-    //                 let donerData;
-    //                 this.donerRespository.findOne(user.doner_id).then(doner => {
-    //                     donerData = doner
-    //                     delete donerData['password'];
-    //                     return response.json({
-    //                         status: true,
-    //                         doner: donerData
-    //                     });
-    //                 });
-    //             }
-    //         }
-    //     });
-    // }
+        if (token == null)
+            return response.json({
+                status: false,
+                message: 'access token is missing in request'
+            });
+        jwt.verify(token, process.env.FTSECRET_KEY, (err, user) => {
+            if(err) {
+                console.log('[+] err:\n');
+                console.log(err.name);
+                if (blackListedTokens.includes(token))
+                    blackListedTokens.splice(blackListedTokens.indexOf(token), 1);
+                return response.json({
+                    status: false,
+                    message: err.message
+                })
+            }
+        
+            if (blackListedTokens.includes(token))
+                return response.json({
+                    status: false,
+                    message: 'you have been logged out, please login again'
+                })
+            else {
+                this.userRespository.findOne(user.user_id).then((user) => {
+                    delete user.password;
+                    let account = user.userRole;
+                    delete user.userRole;
+                    if(user.userRole == UserRole.CHARITY) {
+                        delete user.doner;
+                        user['charity_id'] = user.charityDetails.charity_id;
+                        user['founded_in'] = user.charityDetails.founded_in;
+                        user['tax_exc_cert'] = user.charityDetails.tax_exc_cert;
+                        user['total_expenditure'] = user.charityDetails.total_expenditure;
+                        user['total_fundings'] = user.charityDetails.total_fundings;
+                        user['verified'] = user.charityDetails.verified;
+                        delete user.charityDetails;
+                        return response.json({
+                            status: true,
+                            account_type: account,
+                            user: user,
+                        });
+                    }else if(user.userRole == UserRole.DONER) {
+                        delete user.charityDetails;
+                        user['dob'] = user.doner.dob;
+                        user['doner_id'] = user.doner.doner_id;
+                        user['total_donations'] = user.doner.total_donations;
+                        delete user.doner;
+                        return response.json({
+                            status: true,
+                            account_type: account,
+                            user: user,
+                        });
+                    }else {
+                        delete user.charityDetails;
+                        delete user.doner;
+                        delete user.meta_wallet_address;
+                        delete user.phone1;
+                        delete user.phone2;
+                        delete user.userRole;
+                        return response.json({
+                            status: true,
+                            account_type: account,
+                            user: user,
+                        });
+                    }
+
+                }).catch(err => {
+                    return response.json({
+                        status: false,
+                        message: 'something went wrong, try again later. ('+err.message+')'
+                    });
+                });
+            }
+        });
+    }
 
     async register(request: Request, response: Response, next: NextFunction) {
         const {body} = request;
@@ -217,7 +251,6 @@ export class userController {
             email: email,
             username: username,
             password: bcrypt.hashSync(password, bcrypt.genSaltSync(8), null),
-            // dob: dob,
             description: description,
             phone1: phone1,
             phone2: phone2,
@@ -240,10 +273,17 @@ export class userController {
                         access_token: this.generateUserAccessToken(user.user_id)
                     })
                 }, (err) => {
+                        this.userRespository.delete(user.user_id);
                         return response.json({
                             status: false,
                             message: "Error: Couldn't create Charity Account ("+err.message+")"
                         });
+                }).catch(err => {
+                    this.userRespository.delete(user.user_id);
+                    return response.json({
+                        status: false,
+                        message: "Error: Something Went wrong, try again later ("+err.message+")"
+                    });
                 })
             }else {
                 console.log('[+] registering doner')
@@ -258,10 +298,17 @@ export class userController {
                         access_token: this.generateUserAccessToken(user.user_id)
                     })
                 }, (err) => {
-                        return response.json({
-                            status: false,
-                            message: "Error: Couldn't create Doner Account ("+err.message+")"
-                        });
+                    this.userRespository.delete(user.user_id);
+                    return response.json({
+                        status: false,
+                        message: "Error: Couldn't create Doner Account ("+err.message+")"
+                    });
+                }).catch(err => {
+                    this.userRespository.delete(user.user_id);
+                    return response.json({
+                        status: false,
+                        message: "Error: Something went wrong, try again later ("+err.message+")"
+                    });
                 })
                 return response.json({
                     status: true,
@@ -269,7 +316,12 @@ export class userController {
                     access_token: this.generateUserAccessToken(user.user_id)
                 })
             }
-        }).catch((err) => {
+        }, (err => {
+            return response.json({
+                status: false,
+                message: 'Error: Something went wrong during user registration, try again later. ('+err.message+')'
+            });
+        })).catch((err) => {
             return response.json({
                 status: false,
                 message: 'Error: Registration Failed! ('+err.message+')'
@@ -354,7 +406,7 @@ export class userController {
                     message: 'you have already been logged out'
                 });
             else {
-                this.donerRespository.findOne(user.doner_id).then(doner => {
+                this.userRespository.findOne(user.doner_id).then(doner => {
                     if(!user) {
                         return response.json({
                             status: false,
@@ -405,8 +457,8 @@ export class userController {
                         message: 'you have been logged out, please login again!'
                     });
                 else {
-                    this.donerRespository.findOne(user.doner_id).then((doner) => {
-                        this.donerRespository.remove(doner).then((res) => {
+                    this.userRespository.findOne(user.doner_id).then((doner) => {
+                        this.userRespository.remove(doner).then((res) => {
                             return response.json({
                                 status: true,
                                 message: 'Account Deleted Successfully'

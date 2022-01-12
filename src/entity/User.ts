@@ -56,9 +56,8 @@ export class User {
     @OneToOne(() => CharityDetails, charityDetails => charityDetails.user)
     charityDetails: CharityDetails
 
-    @OneToOne(() => Doners)
-    @JoinColumn()
-    doners: Doners
+    @OneToOne(() => Doners, doner => doner.user)
+    doner: Doners
 
 }
 
@@ -95,7 +94,7 @@ export class Doners {
     @PrimaryGeneratedColumn({type: 'integer'})
     doner_id: number;
 
-    @OneToOne(type => User)
+    @OneToOne(type => User, user => user.doner)
     @JoinColumn()
     user: User
 

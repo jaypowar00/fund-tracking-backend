@@ -19,6 +19,11 @@ export const Routes = [
         route: "/user/logout",
         controller: userController,
         action: "logout"
+    },{
+        method: "get",
+        route: "/user/profile",
+        controller: userController,
+        action: "profile"
     },
     //Admin Routes
     {
@@ -26,8 +31,13 @@ export const Routes = [
         route: "/admin/charities",
         controller: adminController,
         action: "newCharities"
+    }, {
+        method: "post",
+        route: "/admin/charity/verify",
+        controller: userController,
+        action: "responseToCharity"
     },
-    // Donor Routes
+    // Donor+Charity
     {
         method: "get",
         route: "/doners",
