@@ -58,5 +58,10 @@ export const Routes = [
         route: "/doner/delete",
         controller: donerController,
         action: "remove"
-    },
+    }, {
+        method: "get",
+        route: "/charity",
+        controller: userController,
+        action: "getAllCharity"
+    }
 ];

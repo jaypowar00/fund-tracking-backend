@@ -59,16 +59,16 @@ export class userController {
         });
     }
 
-    // async all(request: Request, response: Response, next: NextFunction) {
-    //     let doners = (await this.donerRespository.find()).copyWithin(-1,-1);
-    //     doners.forEach((doner, index) => {
-    //         delete doner.password
-    //     });
-    //     return {
-    //         status: true,
-    //         doners: doners
-    //     }
-    // }
+    async getAllCharity(request: Request, response: Response, next: NextFunction) {
+        let charities = (await this.userRespository.find({where: {userRole: UserRole.CHARITY}})).copyWithin(-1,-1);
+        charities.forEach((charity, index) => {
+            delete charity.password
+        });
+        return {
+            status: true,
+            charities: charities
+        }
+    }
 
     // async one(request: Request, response: Response, next: NextFunction) {
     //     // jwt verification
