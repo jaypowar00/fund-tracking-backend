@@ -133,10 +133,6 @@ export class adminController {
                                 });
                         });
                     }
-                    return response.json({
-                        status: true,
-                        message: null,
-                    })
                 }).catch(err => {
                     return response.json({
                         status: false,

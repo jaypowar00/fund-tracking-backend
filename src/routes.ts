@@ -50,31 +50,6 @@ export const Routes = [
         action: "all"
     }, {
         method: "get",
-        route: "/doners/profile",
-        controller: donerController,
-        action: "one"
-    }, {
-        method: "post",
-        route: "/doners/register",
-        controller: donerController,
-        action: "register"
-    }, {
-        method: "post",
-        route: "/doners/login",
-        controller: donerController,
-        action: "login"
-    }, {
-        method: "post",
-        route: "/doners/logout",
-        controller: donerController,
-        action: "logout"
-    }, {
-        method: "delete",
-        route: "/doner/delete",
-        controller: donerController,
-        action: "remove"
-    }, {
-        method: "get",
         route: "/charity",
         controller: userController,
         action: "getAllCharity"
@@ -83,5 +58,37 @@ export const Routes = [
         route: "/charity/:username",
         controller: userController,
         action: "getOneCharity"
-    }
+    },
+    // {
+    //     method: "get",
+    //     route: "/doners/profile",
+    //     controller: donerController,
+    //     action: "one"
+    // }, {
+    //     method: "post",
+    //     route: "/doners/register",
+    //     controller: donerController,
+    //     action: "register"
+    // }, {
+    //     method: "post",
+    //     route: "/doners/login",
+    //     controller: donerController,
+    //     action: "login"
+    // }, {
+    //     method: "post",
+    //     route: "/doners/logout",
+    //     controller: donerController,
+    //     action: "logout"
+    // }, {
+    //     method: "delete",
+    //     route: "/doner/delete",
+    //     controller: donerController,
+    //     action: "remove"
+    // },
+        {
+            method: "get",
+            route: "/charity/expenses",
+            controller: userController,
+            action: "getCharityExpenses"
+        },
 ];

@@ -2,7 +2,7 @@ import { getRepository } from "typeorm";
 import { NextFunction, Request, Response } from "express";
 // import { Doners } from "../entity/Doners";
 // import { Charity } from "../entity/Charity";
-import { User, CharityDetails, Doners, UserRole, CharityStatus } from "../entity/User";
+import { User, CharityDetails, Doners, UserRole, CharityStatus, Expense, Donation } from "../entity/User";
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 
@@ -13,6 +13,8 @@ export class userController {
     private userRespository = getRepository(User);
     private donerRespository = getRepository(Doners);
     private charityRespository = getRepository(CharityDetails);
+    private expensesRespository = getRepository(Expense);
+    private donationsRespository = getRepository(Donation);
 
     private generateUserAccessToken(user_id) {
         let access_token = jwt.sign({user_id: user_id}, process.env.FTSECRET_KEY, { expiresIn: '3d' });
@@ -89,6 +91,68 @@ export class userController {
         }
     }
 
+    async getCharityExpenses(request: Request, response: Response, next: NextFunction) {
+        // jwt verification
+        const authHeader = request.headers['authorization']
+        const token = authHeader && authHeader.split(' ')[1]
+    
+        if (token == null)
+            return response.json({
+                status: false,
+                message: 'access token is missing in request'
+            });
+        jwt.verify(token, process.env.FTSECRET_KEY, (err, user) => {
+            if(err) {
+                console.log('[+] err:\n');
+                console.log(err.name);
+                if (blackListedTokens.includes(token))
+                    blackListedTokens.splice(blackListedTokens.indexOf(token), 1);
+                return response.json({
+                    status: false,
+                    message: err.message
+                })
+            }
+        
+            if (blackListedTokens.includes(token))
+                return response.json({
+                    status: false,
+                    message: 'you have been logged out, please login again'
+                })
+            else {
+                this.userRespository.findOne(user.user_id).then((user) => {
+                    if(user.userRole != UserRole.CHARITY)
+                        return response.json({
+                            status: false,
+                            message: 'Unauthorized Access. (this feature is only accessible by Chrities)'
+                        });
+                    this.expensesRespository.find({where: {charity: {user: {user_id: user.user_id}}}}).then((expenses) => {
+                        return response.json({
+                            status: true,
+                            expenses: expenses
+                        });
+                    }, (err) => {
+                        return response.json({
+                            status: false,
+                            expenses: [],
+                            message: 'Error: Failed to retrieve expenses. ('+err.message+')'
+                        });
+                    }).catch(err => {
+                        return response.json({
+                            status: false,
+                            expenses: [],
+                            message: 'Error: Something went wrong. ('+err.message+')'
+                        });
+                    })
+                }).catch(err => {
+                    return response.json({
+                        status: false,
+                        message: 'something went wrong, try again later. ('+err.message+')'
+                    });
+                });
+            }
+        });
+    }
+
     async getProfile(request: Request, response: Response, next: NextFunction) {
         // jwt verification
         const authHeader = request.headers['authorization']
@@ -121,7 +185,7 @@ export class userController {
                     delete user.password;
                     let account = user.userRole;
                     delete user.userRole;
-                    if(user.userRole == UserRole.CHARITY) {
+                    if(account == UserRole.CHARITY) {
                         delete user.doner;
                         user['charity_id'] = user.charityDetails.charity_id;
                         user['founded_in'] = user.charityDetails.founded_in;
@@ -135,7 +199,7 @@ export class userController {
                             account_type: account,
                             user: user,
                         });
-                    }else if(user.userRole == UserRole.DONER) {
+                    }else if(account == UserRole.DONER) {
                         delete user.charityDetails;
                         user['dob'] = user.doner.dob;
                         user['doner_id'] = user.doner.doner_id;
