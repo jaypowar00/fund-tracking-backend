@@ -181,49 +181,67 @@ export class userController {
                     message: 'you have been logged out, please login again'
                 })
             else {
-                this.userRespository.findOne(user.user_id).then((user) => {
-                    delete user.password;
-                    let account = user.userRole;
-                    delete user.userRole;
-                    if(account == UserRole.CHARITY) {
-                        delete user.doner;
-                        user['charity_id'] = user.charityDetails.charity_id;
-                        user['founded_in'] = user.charityDetails.founded_in;
-                        user['tax_exc_cert'] = user.charityDetails.tax_exc_cert;
-                        user['total_expenditure'] = user.charityDetails.total_expenditure;
-                        user['total_fundings'] = user.charityDetails.total_fundings;
-                        user['verified'] = user.charityDetails.verified;
-                        delete user.charityDetails;
-                        return response.json({
-                            status: true,
-                            account_type: account,
-                            user: user,
-                        });
-                    }else if(account == UserRole.DONER) {
-                        delete user.charityDetails;
-                        user['dob'] = user.doner.dob;
-                        user['doner_id'] = user.doner.doner_id;
-                        user['total_donations'] = user.doner.total_donations;
-                        delete user.doner;
-                        return response.json({
-                            status: true,
-                            account_type: account,
-                            user: user,
-                        });
-                    }else {
-                        delete user.charityDetails;
-                        delete user.doner;
-                        delete user.meta_wallet_address;
-                        delete user.phone1;
-                        delete user.phone2;
+                this.userRespository.findOne({user_id: user.user_id}).then((user) => {
+                    if(user) {
+                        console.log('in user profile')
+                        let account = user.userRole;
+                        delete user.password;
                         delete user.userRole;
+                        if(account == UserRole.CHARITY) {
+                            console.log('in user profile charity')
+                            console.log(user)
+                            console.log('in user profile charity')
+                            console.log(user.charityDetails)
+                            delete user.doner;
+                            user['charity_id'] = user.charityDetails.charity_id;
+                            user['founded_in'] = user.charityDetails.founded_in;
+                            user['tax_exc_cert'] = user.charityDetails.tax_exc_cert;
+                            user['total_expenditure'] = user.charityDetails.total_expenditure;
+                            user['total_fundings'] = user.charityDetails.total_fundings;
+                            user['verified'] = user.charityDetails.verified;
+                            delete user.charityDetails;
+                            return response.json({
+                                status: true,
+                                account_type: account,
+                                user: user,
+                            });
+                        }else if(account == UserRole.DONER) {
+                            delete user.charityDetails;
+                            user['dob'] = user.doner.dob;
+                            user['doner_id'] = user.doner.doner_id;
+                            user['total_donations'] = user.doner.total_donations;
+                            delete user.doner;
+                            return response.json({
+                                status: true,
+                                account_type: account,
+                                user: user,
+                            });
+                        }else {
+                            delete user.charityDetails;
+                            delete user.doner;
+                            delete user.meta_wallet_address;
+                            delete user.phone1;
+                            delete user.phone2;
+                            delete user.userRole;
+                            return response.json({
+                                status: true,
+                                account_type: account,
+                                user: user,
+                            });
+                        }
+                    }else {
+                        console.log('in user profile else')
                         return response.json({
-                            status: true,
-                            account_type: account,
-                            user: user,
+                            status: false,
+                            message: 'could not find user!'
                         });
                     }
 
+                }, (err) => {
+                    return response.json({
+                        status: false,
+                        message: 'Error while fetching user profile. ('+err.message+')'
+                    });
                 }).catch(err => {
                     return response.json({
                         status: false,

@@ -56,6 +56,7 @@ export class adminController {
                         t_user['username'] = user.username;
                         t_user['user_id'] = user.user_id;
                         t_user['requested_time'] = user.joined_time;
+                        t_user['profile_image'] = user.profile_image;
                         t_user['public_id'] = user.public_id;
                         t_users.push(t_user);
                     });
