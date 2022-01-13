@@ -188,34 +188,54 @@ export class userController {
                         delete user.password;
                         delete user.userRole;
                         if(account == UserRole.CHARITY) {
-                            console.log('in user profile charity')
-                            console.log(user)
-                            console.log('in user profile charity')
-                            console.log(user.charityDetails)
-                            delete user.doner;
-                            user['charity_id'] = user.charityDetails.charity_id;
-                            user['founded_in'] = user.charityDetails.founded_in;
-                            user['tax_exc_cert'] = user.charityDetails.tax_exc_cert;
-                            user['total_expenditure'] = user.charityDetails.total_expenditure;
-                            user['total_fundings'] = user.charityDetails.total_fundings;
-                            user['verified'] = user.charityDetails.verified;
-                            delete user.charityDetails;
-                            return response.json({
-                                status: true,
-                                account_type: account,
-                                user: user,
-                            });
+                            this.charityRespository.findOne({user: user}).then((charity) => {
+                                delete user.doner;
+                                delete user.charityDetails;
+                                user['charity_id'] = charity.charity_id;
+                                user['founded_in'] = charity.founded_in;
+                                user['tax_exc_cert'] = charity.tax_exc_cert;
+                                user['total_expenditure'] = charity.total_expenditure;
+                                user['total_fundings'] = charity.total_fundings;
+                                user['verified'] = charity.verified;
+                                return response.json({
+                                    status: true,
+                                    account_type: account,
+                                    user: user,
+                                });
+                            }, (err) => {
+                                return response.json({
+                                    status: false,
+                                    message: 'Something went wrong while fetching charity data. ('+err.message+')'
+                                });
+                            }).catch(err => {
+                                return response.json({
+                                    status: false,
+                                    message: 'Error: Something went wrong while fetching charity data. ('+err.message+')'
+                                });
+                            })
                         }else if(account == UserRole.DONER) {
-                            delete user.charityDetails;
-                            user['dob'] = user.doner.dob;
-                            user['doner_id'] = user.doner.doner_id;
-                            user['total_donations'] = user.doner.total_donations;
-                            delete user.doner;
-                            return response.json({
-                                status: true,
-                                account_type: account,
-                                user: user,
-                            });
+                            this.donerRespository.findOne({user: user}).then((doner) => {
+                                delete user.charityDetails;
+                                delete user.doner;
+                                user['dob'] = doner.dob;
+                                user['doner_id'] = doner.doner_id;
+                                user['total_donations'] = doner.total_donations;
+                                return response.json({
+                                    status: true,
+                                    account_type: account,
+                                    user: user,
+                                });
+                            }, (err)=>{
+                                return response.json({
+                                    status: false,
+                                    message: 'Something went wrong while fetching Doner data. ('+err.message+')'
+                                });
+                            }).catch(err=> {
+                                return response.json({
+                                    status: false,
+                                    message: 'Error: Something went wrong while fetching Doner data. ('+err.message+')'
+                                });
+                            })
                         }else {
                             delete user.charityDetails;
                             delete user.doner;
@@ -236,6 +256,7 @@ export class userController {
                             message: 'could not find user!'
                         });
                     }
+                
 
                 }, (err) => {
                     return response.json({
