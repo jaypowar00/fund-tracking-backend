@@ -2,7 +2,7 @@ import { getRepository } from "typeorm";
 import { NextFunction, Request, Response } from "express";
 // import { Doners } from "../entity/Doners";
 // import { Charity } from "../entity/Charity";
-import { User, CharityDetails, Doners, UserRole } from "../entity/User";
+import { User, CharityDetails, Doners, UserRole, CharityStatus } from "../entity/User";
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 
@@ -60,7 +60,7 @@ export class userController {
     }
 
     async getAllCharity(request: Request, response: Response, next: NextFunction) {
-        let charities = (await this.userRespository.find({where: {userRole: UserRole.CHARITY, charityDetails: { verified: true }} ,relations: ['charityDetails']}));
+        let charities = (await this.userRespository.find({where: {userRole: UserRole.CHARITY, charityDetails: { verified: CharityStatus.VERIFIED }} ,relations: ['charityDetails']}));
         charities.forEach((charity, index) => {
             delete charity.password
             delete charity.meta_wallet_address

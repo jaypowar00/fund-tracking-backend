@@ -6,6 +6,12 @@ export enum UserRole {
     DONER = "doner",
 };
 
+export enum CharityStatus {
+    PENDING = "pending",
+    VERIFIED = "verified",
+    DECLINED = "declined",
+};
+
 export abstract class Tokens {
     public static blackListedTokens = [];
 }
@@ -74,8 +80,8 @@ export class CharityDetails {
     @Column({type: 'date', nullable: true})
     founded_in: string
     
-    @Column({type: 'bool', nullable: true, default: false})
-    verified: boolean
+    @Column({type: 'enum', enum: CharityStatus, default: CharityStatus.PENDING})
+    verified: CharityStatus
     
     @Column({type: 'integer', nullable: true})
     total_fundings: number

@@ -1,6 +1,6 @@
 import { getRepository } from "typeorm";
 import { NextFunction, Request, Response } from "express";
-import { User, CharityDetails, Doners, UserRole } from "../entity/User";
+import { User, CharityDetails, Doners, UserRole, CharityStatus } from "../entity/User";
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 var userControl = require("./userController");
@@ -48,7 +48,7 @@ export class adminController {
                         });
                     }
                 });
-                this.userRespository.find({where: {userRole: UserRole.CHARITY, charityDetails: { verified: false }}, relations: ["charityDetails"]}).then(users => {
+                this.userRespository.find({where: {userRole: UserRole.CHARITY, charityDetails: { verified: CharityStatus.PENDING }}, relations: ["charityDetails"]}).then(users => {
                     let t_users = []
                     users.forEach((user, index) => {
                         let t_user = {};
@@ -107,18 +107,24 @@ export class adminController {
                         });
                     }
                 });
-                this.userRespository.findOne({where: {userRole: UserRole.CHARITY,username: username}, relations: ['charityDetails']}).then(user => {
+                this.userRespository.findOne({where: {userRole: UserRole.CHARITY, username: username}, relations: ['charityDetails']}).then(user => {
                     if(!user)
                         return response.json({
                             status: false,
                             message: "Target Charity Does not exists anymore...",
                         })
                     else {
-                        this.charityRespository.update(user.charityDetails.charity_id, {verified: accepted}).then((updatedCharityDetails) => {
+                        this.charityRespository.update(user.charityDetails.charity_id, {verified: (accepted)?CharityStatus.VERIFIED:CharityStatus.DECLINED}).then((updatedCharityDetails) => {
                             return response.json({
                                 status: true,
-                                message: 'Charity successfully verified!'
+                                message: (accepted)?'Charity Verification successfully aproved!':'Charity Verification successfully declined!'
                             });
+                        }, (err) => {
+                            if(err)
+                                return response.json({
+                                    status: false,
+                                    message: 'Error: Something went wrong, try again later ('+err.message+')'
+                                });
                         }).catch(err => {
                             if(err)
                                 return response.json({
