@@ -91,6 +91,82 @@ export class userController {
         }
     }
 
+    async getCharityDonations(request: Request, response: Response, next: NextFunction) {
+        // jwt verification
+        const authHeader = request.headers['authorization']
+        const token = authHeader && authHeader.split(' ')[1]
+    
+        if (token == null)
+            return response.json({
+                status: false,
+                message: 'access token is missing in request'
+            });
+        jwt.verify(token, process.env.FTSECRET_KEY, (err, user) => {
+            if(err) {
+                console.log('[+] err:\n');
+                console.log(err.name);
+                if (blackListedTokens.includes(token))
+                    blackListedTokens.splice(blackListedTokens.indexOf(token), 1);
+                return response.json({
+                    status: false,
+                    message: err.message
+                })
+            }
+        
+            if (blackListedTokens.includes(token))
+                return response.json({
+                    status: false,
+                    message: 'you have been logged out, please login again'
+                })
+            else {
+                this.userRespository.findOne(user.user_id).then((user) => {
+                    if(user.userRole != UserRole.CHARITY)
+                        return response.json({
+                            status: false,
+                            message: 'Unauthorized Access. (this feature is only accessible by Chrities)'
+                        });
+                    this.donationsRespository.find({where: {charity: {user: {user_id: user.user_id}}}, relations: ['charity', 'doner', 'charity.user', 'doner.user']}).then((donations) => {
+                        donations.forEach((donation, index)=>{
+                            console.log(index)
+                            console.log(donation.charity.user.name)
+                            console.log(donation.charity.user.username)
+                            console.log(donation.doner.user.name)
+                            console.log(donation.doner.user.username)
+                            donation['charity_name'] = donation.charity.user.name
+                            donation['charity_username'] = donation.charity.user.username
+                            donation['user_profile_image'] = donation.doner.user.profile_image
+                            donation['user_name'] = donation.doner.user.name
+                            donation['user_username'] = donation.doner.user.username
+                            delete donation.charity
+                            delete donation.doner
+                        })
+                        return response.json({
+                            status: true,
+                            donations: donations
+                        });
+                    }, (err) => {
+                        return response.json({
+                            status: false,
+                            donations: [],
+                            message: 'Error: Failed to retrieve donations. ('+err.message+')'
+                        });
+                    }).catch(err => {
+                        return response.json({
+                            status: false,
+                            donations: [],
+                            message: 'Error: Something went wrong. ('+err.message+')'
+                        });
+                    })
+                }).catch(err => {
+                    return response.json({
+                        status: false,
+                        message: 'something went wrong, try again later. ('+err.message+')'
+                    });
+                });
+            }
+        });
+    }
+
     async getCharityExpenses(request: Request, response: Response, next: NextFunction) {
         // jwt verification
         const authHeader = request.headers['authorization']

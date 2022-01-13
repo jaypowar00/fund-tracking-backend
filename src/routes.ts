@@ -91,4 +91,10 @@ export const Routes = [
             controller: userController,
             action: "getCharityExpenses"
         },
+        {
+            method: "get",
+            route: "/charity/profile/donations",
+            controller: userController,
+            action: "getCharityDonations"
+        },
 ];
