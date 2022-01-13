@@ -39,7 +39,7 @@ export const Routes = [
     }, {
         method: "post",
         route: "/admin/charity/verify",
-        controller: userController,
+        controller: adminController,
         action: "responseToCharity"
     },
     // Donor+Charity
