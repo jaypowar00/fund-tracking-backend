@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn,  Column, Generated, OneToOne, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn,  Column, Generated, OneToOne, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 
 export enum UserRole {
     ADMIN = "admin",
@@ -91,6 +91,13 @@ export class CharityDetails {
 
     @Column({type: 'text', nullable: true})
     tax_exc_cert: string
+    
+    @ManyToOne(() => Expense, expense => expense.charity)
+    expenses: Expense
+    
+    @ManyToOne(() => Donation, donation => donation.charity)
+    donations: Donation
+
 }
 
 
@@ -100,7 +107,7 @@ export class Doners {
     @PrimaryGeneratedColumn({type: 'integer'})
     doner_id: number;
 
-    @OneToOne(type => User, user => user.doner)
+    @OneToOne(() => User, user => user.doner)
     @JoinColumn()
     user: User
 
@@ -110,4 +117,45 @@ export class Doners {
     @Column({type: 'integer', nullable: true})
     total_donations: number
 
+    @OneToMany(() => Donation, donation => donation.doner)
+    donations: Donation
+
+}
+
+@Entity()
+export class Expense {
+
+    @PrimaryGeneratedColumn({type: 'integer'})
+    expense_id: number;
+
+    @ManyToOne(() => CharityDetails, charityDetails => charityDetails.expenses)
+    charity: CharityDetails
+
+    @Column({type: 'date', nullable: true, default: "now()"})
+    date: Date = new Date()
+
+    @Column({type: 'text', nullable: true})
+    reason: string
+
+    @Column({type: 'long', nullable: true})
+    amount: number
+}
+
+@Entity()
+export class Donation {
+    
+    @PrimaryGeneratedColumn({type: 'integer'})
+    donation_id: number;
+    
+    @ManyToOne(() => CharityDetails, charityDetails => charityDetails.donations)
+    charity: CharityDetails
+
+    @ManyToOne(() => Doners, doner => doner.donations)
+    doner: Doners
+    
+    @Column({type: 'date', nullable: true, default: "now()"})
+    date: Date = new Date()
+
+    @Column({type: 'long', nullable: true})
+    amount: number
 }
