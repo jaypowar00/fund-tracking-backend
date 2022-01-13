@@ -60,11 +60,9 @@ export class User {
     joined_time: Date = new Date()
 
     @OneToOne(() => CharityDetails, charityDetails => charityDetails.user)
-    @JoinColumn()
     charityDetails: CharityDetails
 
     @OneToOne(() => Doners, doner => doner.user)
-    @JoinColumn()
     doner: Doners
 }
 
