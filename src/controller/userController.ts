@@ -494,6 +494,7 @@ export class userController {
                     return response.json({
                         status: true,
                         message: 'Login Successful',
+                        account_type: user.userRole,
                         access_token: access_token
                     });
                 }else {
