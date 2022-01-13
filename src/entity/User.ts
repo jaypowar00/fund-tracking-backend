@@ -137,7 +137,7 @@ export class Expense {
     @Column({type: 'text', nullable: true})
     reason: string
 
-    @Column({type: 'long', nullable: true})
+    @Column({type: 'number', nullable: true})
     amount: number
 }
 
@@ -156,6 +156,6 @@ export class Donation {
     @Column({type: 'date', nullable: true, default: "now()"})
     date: Date = new Date()
 
-    @Column({type: 'long', nullable: true})
+    @Column({type: 'number', nullable: true})
     amount: number
 }
