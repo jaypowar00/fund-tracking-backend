@@ -125,7 +125,10 @@ export class userController {
                             status: false,
                             message: 'Unauthorized Access. (this feature is only accessible by Chrities)'
                         });
-                    this.expensesRespository.find({where: {charity: {user: {user_id: user.user_id}}}}).then((expenses) => {
+                    this.expensesRespository.find({where: {charity: {user: {user_id: user.user_id}}}, relations: ['charity']}).then((expenses) => {
+                        expenses.forEach((expense, index)=>{
+                            delete expense.charity
+                        })
                         return response.json({
                             status: true,
                             expenses: expenses

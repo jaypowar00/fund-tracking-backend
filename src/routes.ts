@@ -87,7 +87,7 @@ export const Routes = [
     // },
         {
             method: "get",
-            route: "/charity/expenses",
+            route: "/charity/profile/expenses",
             controller: userController,
             action: "getCharityExpenses"
         },
