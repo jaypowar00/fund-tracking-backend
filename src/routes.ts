@@ -6,11 +6,6 @@ export const Routes = [
     // Common Routes
     {
         method: "post",
-        route: "/user/register",
-        controller: userController,
-        action: "register"
-    },{
-        method: "post",
         route: "/user/login",
         controller: userController,
         action: "login"
@@ -95,6 +90,18 @@ export const Routes = [
             method: "get",
             route: "/charity/profile/donations",
             controller: userController,
-            action: "getCharityDonations"
+            action: "getCharityDonations",
         },
+        {
+            method: "post",
+            route: "/user/upload/profile_image",
+            controller: userController,
+            action: "uploadProfileImage"
+        },
+        // {
+        //     method: "post",
+        //     route: "",
+        //     controller: userController,
+        //     action: "uploadCharityFiles"
+        // },
 ];

@@ -1,15 +1,20 @@
+require('dotenv/config');
 import { getRepository } from "typeorm";
 import { NextFunction, Request, Response } from "express";
-// import { Doners } from "../entity/Doners";
-// import { Charity } from "../entity/Charity";
 import { User, CharityDetails, Doners, UserRole, CharityStatus, Expense, Donation } from "../entity/User";
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
+import firebase from "firebase";
+require('firebase/storage');
+global.XMLHttpRequest = require("xhr2");
+import { firebaseConfig } from '../config';
 
-let blackListedTokens = [];
+export const fire_app: firebase.app.App = firebase.initializeApp(firebaseConfig);
+export const storage = fire_app.storage(process.env.STORAGE_BUCKET).ref(process.env.STORAGE_BUCKET_PATH);
+
+export let blackListedTokens = [];
 
 export class userController {
-
     private userRespository = getRepository(User);
     private donerRespository = getRepository(Doners);
     private charityRespository = getRepository(CharityDetails);
@@ -796,5 +801,3 @@ export class userController {
         });
     }
 }
-
-exports.blackListedTokens = blackListedTokens;

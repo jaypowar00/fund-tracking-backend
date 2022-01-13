@@ -4,10 +4,12 @@ import * as express from "express";
 import {Request, Response} from "express";
 import {Routes} from "./routes";
 import * as cors from "cors";
+import { uploadRouter } from "./image_route";
 require('dotenv/config');
 
-createConnection().then(async connection => {
 
+createConnection().then(async connection => {
+    
     const envDomains = process.env.FT_CORS_DOMAINS || "";
     const whitelist = envDomains.split(",").map(item => item.trim());
     const corsOptions = {
@@ -20,14 +22,13 @@ createConnection().then(async connection => {
         },
         credentials: true,
     }
-
+    
     const app = express();
     app.use(express.json({ limit: '50mb' }));
     app.use(cors(corsOptions))
-    
     const PORT = process.env.PORT || 4000;
     app.use(express.urlencoded({extended: true}));
-
+    
     Routes.forEach(route => {
         (app as any)[route.method](route.route, (req: Request, res: Response, next: Function) => {
             const result = (new (route.controller as any))[route.action](req, res, next);
@@ -38,8 +39,11 @@ createConnection().then(async connection => {
             }
         });
     });
-
+    
+    app.use('/user', uploadRouter);
     
     app.listen(PORT, ()=>console.log('[+] Express server is running at port: '+ PORT));
 
+}, (err) => {
+    console.log(err)
 }).catch(error => console.log(error));

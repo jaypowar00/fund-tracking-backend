@@ -3,9 +3,8 @@ import { NextFunction, Request, Response } from "express";
 import { User, CharityDetails, Doners, UserRole, CharityStatus } from "../entity/User";
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
+import { blackListedTokens } from "./userController";
 var userControl = require("./userController");
-
-let blackListedTokens = [];
 
 export class adminController {
 
