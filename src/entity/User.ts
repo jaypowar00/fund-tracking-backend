@@ -38,7 +38,7 @@ export class User {
     @Column({type: 'varchar', length: 256})
     password: string
     
-    @Column({type: 'varchar', length: 256, nullable: true})
+    @Column({type: 'text', nullable: true})
     description: string
 
     @Column({type: 'enum', enum: UserRole, default: UserRole.DONER})
