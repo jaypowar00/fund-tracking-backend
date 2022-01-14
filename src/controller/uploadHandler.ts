@@ -195,6 +195,164 @@ export async function userRegister(request: Request, response: Response, next: N
     });
 }
 
+export async function updateProfile(request: Request, response: Response, next: NextFunction) {
+    const userRepository = getRepository(User);
+    const donerRepository = getRepository(Doners);
+    const charityRepository = getRepository(CharityDetails);
+
+    const files = request.files as {
+        [fieldname: string]: Express.Multer.File[];
+    }
+    let profile_image, tax_exc_cert;
+    Object.entries(files).map((value, index) => {
+        let k = value[0]
+        let v = value[1][0]
+        if(k=="profile_photo")
+            profile_image = v
+        else
+            tax_exc_cert = v
+    })
+    const { body } = request;
+    let {
+        name,
+        username,
+        password,
+        dob,
+        description,
+        phone1,
+        phone2,
+        meta_wallet_address,
+        founded_in,
+        total_fundings,
+        total_expenditure,
+        total_donations,
+    } = body;
+    let {email} = body;
+    
+    // jwt verification
+    const authHeader = request.headers['authorization']
+    const token = authHeader && authHeader.split(' ')[1]
+
+    if (token == null)
+        return response.json({
+            status: false,
+            message: 'access token is missing in request'
+        });
+    jwt.verify(token, process.env.FTSECRET_KEY, async (err, user) => {
+        if(err) {
+            console.log('[+] err:\n');
+            console.log(err.name);
+            if (blackListedTokens.includes(token))
+                blackListedTokens.splice(blackListedTokens.indexOf(token), 1);
+            return response.json({
+                status: false,
+                message: err.message
+            })
+        }
+    
+        if (blackListedTokens.includes(token))
+            return response.json({
+                status: false,
+                message: 'you have been logged out, please login again'
+            })
+        else {
+            userRepository.findOne(user.user_id).then(async(user) => {
+                let res;
+                if(profile_image)
+                    res = await uploadFileToFirebase(profile_image, user.username, 'profile_photo');
+                let backup_user = user
+                let account = user.userRole
+                name = (name)?name:user.name
+                email = (email)?email:user.email
+                username = (username)?username:user.username
+                password = (password)?bcrypt.hashSync(password, bcrypt.genSaltSync(8), null):user.password
+                description = (description)?description:user.description
+                phone1 = (phone1)?phone1:user.phone1
+                phone2 = (phone2)?phone2:user.phone2
+                meta_wallet_address = (meta_wallet_address)?meta_wallet_address:user.meta_wallet_address
+                profile_image = (res.status && res.img_url != undefined)?res.img_url:user.profile_image,
+                userRepository.update(user.user_id, {
+                    name: name,
+                    email: email,
+                    username: username,
+                    password: bcrypt.hashSync(password, bcrypt.genSaltSync(8), null),
+                    description: description,
+                    phone1: phone1,
+                    phone2: phone2,
+                    meta_wallet_address: meta_wallet_address,
+                    profile_image: profile_image
+                }).then((async updatedData => {
+                    if(account == UserRole.CHARITY) {
+                        let res2;
+                        if(profile_image)
+                            res2 = await uploadFileToFirebase(tax_exc_cert, user.username, '80G_Certificate');
+                        founded_in = (founded_in)? founded_in:user.charityDetails.founded_in
+                        total_fundings = (total_fundings)? total_fundings:user.charityDetails.total_fundings
+                        total_expenditure = (total_expenditure)? total_expenditure:user.charityDetails.total_expenditure
+                        tax_exc_cert = (res2.status && res2.img_url != undefined)?res2.img_url:user.charityDetails.tax_exc_cert
+                        charityRepository.update(user.charityDetails.charity_id, {
+                            founded_in: founded_in,
+                            total_fundings: total_fundings,
+                            total_expenditure: total_expenditure,
+                            tax_exc_cert: tax_exc_cert
+                        }).then(() => {
+                            return response.json({
+                                status: true,
+                                message: 'Profile updated'
+                            });
+                        }, (err) => {
+                            userRepository.update(user.user_id, backup_user).then(()=>{
+                                return response.json({
+                                    status: false,
+                                    message: 'Failed to update profile ('+err.message+')'
+                                });
+                            })
+                        }).catch((err)=>{
+                            userRepository.update(user.user_id, backup_user).then(()=>{
+                                return response.json({
+                                    status: false,
+                                    message: 'Failed to update profile ('+err.message+')'
+                                });
+                            })
+                        });
+                    }else if(account == UserRole.DONER) {
+                        dob = (dob)? dob:user.doner.dob
+                        total_donations = (total_donations)? total_donations:user.doner.total_donations
+                        donerRepository.update(user.doner.doner_id, {
+                            dob: dob,
+                            total_donations: total_donations
+                        }).then(() => {
+                            return response.json({
+                                status: true,
+                                message: 'Profile updated'
+                            });
+                        }, (err) => {
+                            userRepository.update(user.user_id, backup_user).then(()=>{
+                                return response.json({
+                                    status: false,
+                                    message: 'Failed to update profile ('+err.message+')'
+                                });
+                            })
+                        }).catch((err)=>{
+                            userRepository.update(user.user_id, backup_user).then(()=>{
+                                return response.json({
+                                    status: false,
+                                    message: 'Failed to update profile ('+err.message+')'
+                                });
+                            })
+                        });
+                    }
+                }))
+            }).catch(err => {
+                return response.json({
+                    status: false,
+                    message: 'something went wrong, try again later. ('+err.message+')'
+                });
+            });
+        }
+    });
+}
+
 async function uploadFileToFirebase(file, username, filename) {
     try {
         const type = file.originalname.split(".")[1];
