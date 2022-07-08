@@ -226,7 +226,7 @@ export async function uploadReasonPhoto(request: Request, response: Response, ne
             })
         else {
             const userRepository = getRepository(User);
-            userRepository.findOne({user_id: user.user_id}).then(async (user) => {
+            userRepository.findOne({user_id: user['user_id']}).then(async (user) => {
                 if(user) {
                     let account = user.userRole;
                     if(account == UserRole.CHARITY) {
@@ -347,7 +347,7 @@ export async function updateProfile(request: Request, response: Response, next: 
                 message: 'you have been logged out, please login again'
             })
         else {
-            userRepository.findOne(user.user_id).then(async(user) => {
+            userRepository.findOne(user['user_id']).then(async(user) => {
                 let res;
                 if(profile_image)
                     res = await uploadFileToFirebase(profile_image, user.username, 'profile_photo');
