@@ -16,4 +16,4 @@ const upload2 = multer({storage: storage}).fields([
 export const uploadRouter = express.Router();
 
 uploadRouter.post('/register', upload, userRegister);
-uploadRouter.post('/uploadReasonPhoto', upload2, uploadReasonPhoto);
+uploadRouter.post('/upload-reason-photo', upload2, uploadReasonPhoto);

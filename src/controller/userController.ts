@@ -11,6 +11,7 @@ import { firebaseConfig } from '../config';
 
 export const fire_app: firebase.app.App = firebase.initializeApp(firebaseConfig);
 export const storage = fire_app.storage(process.env.STORAGE_BUCKET).ref(process.env.STORAGE_BUCKET_PATH);
+export const proof_storage = fire_app.storage(process.env.STORAGE_BUCKET).ref(process.env.STORAGE_BUCKET_PATH_PROOF);
 
 export let blackListedTokens = [];
 

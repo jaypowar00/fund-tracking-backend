@@ -6,7 +6,7 @@ import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 require('firebase/storage');
 global.XMLHttpRequest = require("xhr2");
-import { blackListedTokens, storage } from "./userController";
+import { blackListedTokens, storage, proof_storage } from "./userController";
 
 function generateUserAccessToken(user_id) {
     let access_token = jwt.sign({user_id: user_id}, process.env.FTSECRET_KEY, { expiresIn: '3d' });
@@ -226,8 +226,7 @@ export async function uploadReasonPhoto(request: Request, response: Response, ne
             })
         else {
             const userRepository = getRepository(User);
-            const charityRepository = getRepository(CharityDetails);
-            this.userRespository.findOne({user_id: user.user_id}).then(async (user) => {
+            userRepository.findOne({user_id: user.user_id}).then(async (user) => {
                 if(user) {
                     let account = user.userRole;
                     if(account == UserRole.CHARITY) {
@@ -239,6 +238,12 @@ export async function uploadReasonPhoto(request: Request, response: Response, ne
                             [fieldname: string]: Express.Multer.File[];
                         }
                         let proof_image;
+                        if(!files) {
+                            return response.json({
+                                status: false,
+                                message: 'please provide 1 file to upload'
+                            })
+                        }
                         Object.entries(files).map((value, index) => {
                             let k = value[0]
                             let v = value[1][0]
@@ -248,7 +253,7 @@ export async function uploadReasonPhoto(request: Request, response: Response, ne
                         console.log('[+] uploading reason file...')
                         let res;
                         if(proof_image) {
-                            res = await uploadFileToFirebase(proof_image, user.username, reason_filename);
+                            res = await uploadProofFileToFirebase(proof_image, user.username, reason_filename);
                             if(res.status && res.img_url != undefined) {
                                 return response.json({
                                     status: true,
@@ -444,6 +449,25 @@ async function uploadFileToFirebase(file, username, filename) {
         const type = file.originalname.split(".")[1];
         const fileName = `${username}_${filename}.${type}`;
         const imageRef = storage.child(fileName);
+        const snapshot = await imageRef.put(file.buffer, {contentType: file.mimetype});
+        const downloadURL = await snapshot.ref.getDownloadURL();
+
+        return {status: true, img_url: downloadURL, filename: filename};
+
+     }  catch (error) {
+        console.log (error)
+        return {
+            status: false,
+            message: 'Error: something went wrong! ('+error.message+')',
+            filename: filename
+        };
+    }
+}
+async function uploadProofFileToFirebase(file, username, filename) {
+    try {
+        const type = file.originalname.split(".")[1];
+        const fileName = `${username}_${filename}.${type}`;
+        const imageRef = proof_storage.child(fileName);
         const snapshot = await imageRef.put(file.buffer, {contentType: file.mimetype});
         const downloadURL = await snapshot.ref.getDownloadURL();
 
