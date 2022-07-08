@@ -125,7 +125,7 @@ export class userController {
                     message: 'you have been logged out, please login again'
                 })
             else {
-                this.userRespository.findOne(user.user_id).then((user) => {
+                this.userRespository.findOne(user['user_id']).then((user) => {
                     if(user.userRole != UserRole.CHARITY)
                         return response.json({
                             status: false,
@@ -201,13 +201,13 @@ export class userController {
                     message: 'you have been logged out, please login again'
                 })
             else {
-                this.userRespository.findOne(user.user_id).then((user) => {
+                this.userRespository.findOne(user['user_id']).then((user) => {
                     if(user.userRole != UserRole.CHARITY)
                         return response.json({
                             status: false,
                             message: 'Unauthorized Access. (this feature is only accessible by Chrities)'
                         });
-                    this.expensesRespository.find({where: {charity: {user: {user_id: user.user_id}}}, relations: ['charity']}).then((expenses) => {
+                    this.expensesRespository.find({where: {charity: {user: {user_id: user['user_id']}}}, relations: ['charity']}).then((expenses) => {
                         expenses.forEach((expense, index)=>{
                             delete expense.charity
                         })
@@ -266,7 +266,7 @@ export class userController {
                     message: 'you have been logged out, please login again'
                 })
             else {
-                this.userRespository.findOne({user_id: user.user_id}).then((user) => {
+                this.userRespository.findOne({user_id: user['user_id']}).then((user) => {
                     if(user) {
                         console.log('in user profile')
                         let account = user.userRole;
@@ -303,7 +303,7 @@ export class userController {
                                 delete user.charityDetails;
                                 delete user.doner;
                                 user['dob'] = doner.dob;
-                                user['doner_id'] = doner.doner_id;
+                                user['user_id'] = doner.doner_id;
                                 user['total_donations'] = doner.total_donations;
                                 return response.json({
                                     status: true,
@@ -404,7 +404,7 @@ export class userController {
                     message: 'you have been logged out, please login again'
                 })
             else {
-                this.userRespository.findOne(user.user_id).then((user) => {
+                this.userRespository.findOne(user['user_id']).then((user) => {
                     let backup_user = user
                     let account = user.userRole
                     name = (name)?name:user.name
@@ -732,7 +732,7 @@ export class userController {
                     message: 'you have already been logged out'
                 });
             else {
-                this.userRespository.findOne(user.doner_id).then(doner => {
+                this.userRespository.findOne(user['user_id']).then(doner => {
                     if(!user) {
                         return response.json({
                             status: false,
@@ -771,7 +771,7 @@ export class userController {
                     message: err.message
                 })
             }
-            if (user.ac_type !== "doner") {
+            if (user['ac_type'] !== "doner") {
                 return response.json({
                     status: false,
                     message: 'Unauthorized Access'
@@ -783,7 +783,7 @@ export class userController {
                         message: 'you have been logged out, please login again!'
                     });
                 else {
-                    this.userRespository.findOne(user.doner_id).then((doner) => {
+                    this.userRespository.findOne(user['user_id']).then((doner) => {
                         this.userRespository.remove(doner).then((res) => {
                             return response.json({
                                 status: true,
