@@ -20,12 +20,12 @@ export const Routes = [
         controller: userController,
         action: "getProfile"
     },
-    {
-        method: "put",
-        route: "/user/profile",
-        controller: userController,
-        action: "updateProfile"
-    },
+    // {
+    //     method: "put",
+    //     route: "/user/profile",
+    //     controller: userController,
+    //     action: "updateProfile"
+    // },
     //Admin Routes
     {
         method: "get",
@@ -112,4 +112,10 @@ export const Routes = [
             controller: userController,
             action: "uploadReasonProof"
         },
+        // {
+        //     method: "get",
+        //     route: "/doner/donations",
+        //     controller: donerController,
+        //     action: "getUserDonations"
+        // },
 ];

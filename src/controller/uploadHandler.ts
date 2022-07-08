@@ -357,7 +357,7 @@ export async function updateProfile(request: Request, response: Response, next: 
                 name = (name)?name:user.name
                 email = (email)?email:user.email
                 username = (username)?username:user.username
-                password = (password)?bcrypt.hashSync(password, bcrypt.genSaltSync(8), null):user.password
+                password = (password)?password:user.password
                 description = (description)?description:user.description
                 phone1 = (phone1)?phone1:user.phone1
                 phone2 = (phone2)?phone2:user.phone2

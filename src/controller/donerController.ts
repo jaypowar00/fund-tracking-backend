@@ -3,6 +3,8 @@ import { NextFunction, Request, Response } from "express";
 import { Doners, User, UserRole } from "../entity/User";
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
+import Web3 from "web3";
+const controller = require("../abi/fundEth.json");
 
 let blackListedTokens = [];
 
@@ -112,6 +114,75 @@ export class donerController {
             }
         });
     }
+
+    // async getUserDonations(request: Request, response: Response, next: NextFunction) {
+    //     // jwt verification
+    //     const authHeader = request.headers['authorization']
+    //     const token = authHeader && authHeader.split(' ')[1]
+    
+    //     if (token == null)
+    //         return response.json({
+    //             status: false,
+    //             message: 'access token is missing in request'
+    //         });
+    //     jwt.verify(token, process.env.FTSECRET_KEY, async (err, user) => {
+    //         if(err) {
+    //             console.log('[+] err:\n');
+    //             console.log(err.name);
+    //             if (blackListedTokens.includes(token))
+    //                 blackListedTokens.splice(blackListedTokens.indexOf(token), 1);
+    //             return response.json({
+    //                 status: false,
+    //                 message: err.message
+    //             })
+    //         }
+    //         if (user['ac_type'] !== "doner") {
+    //             return response.json({
+    //                 status: false,
+    //                 message: 'Unauthorized Access'
+    //             });
+    //         }else {
+    //             if (blackListedTokens.includes(token))
+    //                 return response.json({
+    //                     status: false,
+    //                     message: 'you have been logged out, please login again'
+    //                 })
+    //             else {
+    //                 this.userRespository.findOne(user['user_id']).then(async(user) => {
+    //                     let donations = [];
+    //                     let web3 = new Web3("HTTP://ganache.avdhut.live:8545");
+    //                     let networkId = await web3.eth.net.getId();
+    //                     const fundEthData = controller.networks[networkId];
+    //                     let contract = new web3.eth.Contract(controller.abi, fundEthData.address);
+    //                     contract.methods.getDonationsOf(user.meta_wallet_address).call().then(res => {
+    //                         console.log(res);
+    //                         let n = [];
+    //                         res.map(value => {
+    //                             n.push(value);
+    //                             return null;
+    //                         });
+    //                         n.reverse();
+    //                         console.log(`donations ${JSON.stringify(n)}`);
+    //                         return response.json({
+    //                             status: true,
+    //                             donations: n
+    //                         });
+    //                     }).catch(err => {
+    //                         return response.json({
+    //                             status: false,
+    //                             message: 'Something went wrong ('+err.message+')'
+    //                         });
+    //                     })
+    //                 }).catch(err => {
+    //                     return response.json({
+    //                         status: false,
+    //                         message: 'Something went wrong ('+err.message+')'
+    //                     });
+    //                 });
+    //             }
+    //         }
+    //     });
+    // }
 
     async register(request: Request, response: Response, next: NextFunction) {
         const {body} = request;

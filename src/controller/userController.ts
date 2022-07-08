@@ -685,6 +685,9 @@ export class userController {
             email: email
         }).then((user) => {
             if (user) {
+                console.log('-----')
+                console.log(password)
+                console.log(user.password)
                 if(bcrypt.compareSync(password, user.password)) {
                     let access_token = this.generateUserAccessToken(user.user_id);
                     return response.json({
