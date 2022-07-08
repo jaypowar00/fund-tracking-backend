@@ -295,14 +295,15 @@ export async function updateProfile(request: Request, response: Response, next: 
         [fieldname: string]: Express.Multer.File[];
     }
     let profile_image, tax_exc_cert;
-    Object.entries(files).map((value, index) => {
-        let k = value[0]
-        let v = value[1][0]
-        if(k=="profile_photo")
-            profile_image = v
-        else
-            tax_exc_cert = v
-    })
+    if(files)
+        Object.entries(files).map((value, index) => {
+            let k = value[0]
+            let v = value[1][0]
+            if(k=="profile_photo")
+                profile_image = v
+            else
+                tax_exc_cert = v
+        })
     const { body } = request;
     let {
         name,
@@ -348,7 +349,7 @@ export async function updateProfile(request: Request, response: Response, next: 
             })
         else {
             userRepository.findOne(user['user_id']).then(async(user) => {
-                let res;
+                let res = null;
                 if(profile_image)
                     res = await uploadFileToFirebase(profile_image, user.username, 'profile_photo');
                 let backup_user = user
@@ -361,7 +362,7 @@ export async function updateProfile(request: Request, response: Response, next: 
                 phone1 = (phone1)?phone1:user.phone1
                 phone2 = (phone2)?phone2:user.phone2
                 meta_wallet_address = (meta_wallet_address)?meta_wallet_address:user.meta_wallet_address
-                profile_image = (res.status && res.img_url != undefined)?res.img_url:user.profile_image,
+                profile_image = (res && res.status && res.img_url != undefined)?res.img_url:user.profile_image,
                 userRepository.update(user.user_id, {
                     name: name,
                     email: email,
@@ -374,64 +375,82 @@ export async function updateProfile(request: Request, response: Response, next: 
                     profile_image: profile_image
                 }).then((async updatedData => {
                     if(account == UserRole.CHARITY) {
-                        let res2;
-                        if(profile_image)
-                            res2 = await uploadFileToFirebase(tax_exc_cert, user.username, '80G_Certificate');
-                        founded_in = (founded_in)? founded_in:user.charityDetails.founded_in
-                        total_fundings = (total_fundings)? total_fundings:user.charityDetails.total_fundings
-                        total_expenditure = (total_expenditure)? total_expenditure:user.charityDetails.total_expenditure
-                        tax_exc_cert = (res2.status && res2.img_url != undefined)?res2.img_url:user.charityDetails.tax_exc_cert
-                        charityRepository.update(user.charityDetails.charity_id, {
-                            founded_in: founded_in,
-                            total_fundings: total_fundings,
-                            total_expenditure: total_expenditure,
-                            tax_exc_cert: tax_exc_cert
-                        }).then(() => {
-                            return response.json({
-                                status: true,
-                                message: 'Profile updated'
+                        charityRepository.findOne({user: user}).then(async (charityDetails) => {
+                            let res2 = null;
+                            if(tax_exc_cert)
+                                res2 = await uploadFileToFirebase(tax_exc_cert, user.username, '80G_Certificate');
+                            founded_in = (founded_in)? founded_in:charityDetails.founded_in
+                            total_fundings = (total_fundings)? total_fundings:charityDetails.total_fundings
+                            total_expenditure = (total_expenditure)? total_expenditure:charityDetails.total_expenditure
+                            tax_exc_cert = (res2 && res2.status && res2.img_url != undefined)?res2.img_url:charityDetails.tax_exc_cert
+                            charityRepository.update(charityDetails.charity_id, {
+                                founded_in: founded_in,
+                                total_fundings: total_fundings,
+                                total_expenditure: total_expenditure,
+                                tax_exc_cert: tax_exc_cert
+                            }).then(() => {
+                                return response.json({
+                                    status: true,
+                                    message: 'Profile updated'
+                                });
+                            }, (err) => {
+                                userRepository.update(user.user_id, backup_user).then(()=>{
+                                    return response.json({
+                                        status: false,
+                                        message: 'Failed to update profile ('+err.message+')'
+                                    });
+                                })
+                            }).catch((err)=>{
+                                userRepository.update(user.user_id, backup_user).then(()=>{
+                                    return response.json({
+                                        status: false,
+                                        message: 'Failed to update profile ('+err.message+')'
+                                    });
+                                })
                             });
-                        }, (err) => {
+                        }).catch(err => {
                             userRepository.update(user.user_id, backup_user).then(()=>{
                                 return response.json({
-                                    status: false,
-                                    message: 'Failed to update profile ('+err.message+')'
+                                    status:false,
+                                    message: 'Failed to update profile!('+err.message+')'
                                 });
                             })
-                        }).catch((err)=>{
-                            userRepository.update(user.user_id, backup_user).then(()=>{
-                                return response.json({
-                                    status: false,
-                                    message: 'Failed to update profile ('+err.message+')'
-                                });
-                            })
-                        });
+                        })
                     }else if(account == UserRole.DONER) {
-                        dob = (dob)? dob:user.doner.dob
-                        total_donations = (total_donations)? total_donations:user.doner.total_donations
-                        donerRepository.update(user.doner.doner_id, {
-                            dob: dob,
-                            total_donations: total_donations
-                        }).then(() => {
-                            return response.json({
-                                status: true,
-                                message: 'Profile updated'
+                        donerRepository.findOne({user: user}).then(async (doner) => {
+                            dob = (dob)? dob:doner.dob
+                            total_donations = (total_donations)? total_donations:doner.total_donations
+                            donerRepository.update(doner.doner_id, {
+                                dob: dob,
+                                total_donations: total_donations
+                            }).then(() => {
+                                return response.json({
+                                    status: true,
+                                    message: 'Profile updated'
+                                });
+                            }, (err) => {
+                                userRepository.update(user.user_id, backup_user).then(()=>{
+                                    return response.json({
+                                        status: false,
+                                        message: 'Failed to update profile ('+err.message+')'
+                                    });
+                                })
+                            }).catch((err)=>{
+                                userRepository.update(user.user_id, backup_user).then(()=>{
+                                    return response.json({
+                                        status: false,
+                                        message: 'Failed to update profile ('+err.message+')'
+                                    });
+                                })
                             });
-                        }, (err) => {
+                        }).catch(err => {
                             userRepository.update(user.user_id, backup_user).then(()=>{
                                 return response.json({
-                                    status: false,
-                                    message: 'Failed to update profile ('+err.message+')'
+                                    status:false,
+                                    message: 'Failed to update profile!('+err.message+')'
                                 });
                             })
-                        }).catch((err)=>{
-                            userRepository.update(user.user_id, backup_user).then(()=>{
-                                return response.json({
-                                    status: false,
-                                    message: 'Failed to update profile ('+err.message+')'
-                                });
-                            })
-                        });
+                        })
                     }
                 }))
             }).catch(err => {

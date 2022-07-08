@@ -1,6 +1,6 @@
 import * as express from "express"
 import * as multer from "multer";
-import { uploadReasonFile, userRegister } from "./controller/uploadHandler";
+import { uploadReasonFile, userRegister, updateTaxCertificate, updateProfilePhoto, updateProfile } from "./controller/uploadHandler";
 
 const storage = multer.memoryStorage();
 
@@ -17,3 +17,4 @@ export const uploadRouter = express.Router();
 
 uploadRouter.post('/register', upload, userRegister);
 uploadRouter.post('/upload-reason-file', upload2, uploadReasonFile);
+uploadRouter.post('/profile', upload, updateProfile)
