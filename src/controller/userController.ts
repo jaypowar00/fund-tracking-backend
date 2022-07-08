@@ -458,31 +458,40 @@ export class userController {
                                 })
                             });
                         }else if(account == UserRole.DONER) {
-                            dob = (dob)? dob:user.doner.dob
-                            total_donations = (total_donations)? total_donations:user.doner.total_donations
-                            this.donerRespository.update(user.doner.doner_id, {
-                                dob: dob,
-                                total_donations: total_donations
-                            }).then(() => {
-                                return response.json({
-                                    status: true,
-                                    message: 'Profile updated'
-                                });
-                            }, (err) => {
+                            this.donerRespository.findOne({user: user}).then((doner)=>{
+                                dob = (dob)? dob:doner.dob
+                                total_donations = (total_donations)? total_donations:doner.total_donations
+                                this.donerRespository.update(doner.doner_id, {
+                                    dob: dob,
+                                    total_donations: total_donations
+                                }).then(() => {
+                                    return response.json({
+                                        status: true,
+                                        message: 'Profile updated'
+                                    });
+                                }, (err) => {
+                                    this.userRespository.update(user.user_id, backup_user).then(()=>{
+                                        return response.json({
+                                            status: false,
+                                            message: 'Failed to update profile ('+err.message+')'
+                                        });
+                                    })
+                                }).catch((err)=>{
+                                    this.userRespository.update(user.user_id, backup_user).then(()=>{
+                                        return response.json({
+                                            status: false,
+                                            message: 'Failed to update profile ('+err.message+')'
+                                        });
+                                    })
+                                });  
+                            }).catch(err => {
                                 this.userRespository.update(user.user_id, backup_user).then(()=>{
                                     return response.json({
                                         status: false,
-                                        message: 'Failed to update profile ('+err.message+')'
+                                        message: 'Failed to update Doner Profile Attributes ('+err.message+')'
                                     });
                                 })
-                            }).catch((err)=>{
-                                this.userRespository.update(user.user_id, backup_user).then(()=>{
-                                    return response.json({
-                                        status: false,
-                                        message: 'Failed to update profile ('+err.message+')'
-                                    });
-                                })
-                            });
+                            })
                         }
                     }))
                 }).catch(err => {
