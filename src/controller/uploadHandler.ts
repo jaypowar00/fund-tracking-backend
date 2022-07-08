@@ -195,6 +195,92 @@ export async function userRegister(request: Request, response: Response, next: N
     });
 }
 
+export async function uploadReasonPhoto(request: Request, response: Response, next: NextFunction) {
+
+    // jwt verification
+    const authHeader = request.headers['authorization']
+    const token = authHeader && authHeader.split(' ')[1]
+
+    if (token == null)
+        return response.json({
+            status: false,
+            message: 'access token is missing in request'
+        });
+
+    jwt.verify(token, process.env.FTSECRET_KEY, async (err, user) => {
+        if(err) {
+            console.log('[+] err:\n');
+            console.log(err.name);
+            if (blackListedTokens.includes(token))
+                blackListedTokens.splice(blackListedTokens.indexOf(token), 1);
+            return response.json({
+                status: false,
+                message: err.message
+            })
+        }
+    
+        if (blackListedTokens.includes(token))
+            return response.json({
+                status: false,
+                message: 'you have been logged out, please login again'
+            })
+        else {
+            const userRepository = getRepository(User);
+            const charityRepository = getRepository(CharityDetails);
+            this.userRespository.findOne({user_id: user.user_id}).then(async (user) => {
+                if(user) {
+                    let account = user.userRole;
+                    if(account == UserRole.CHARITY) {
+                        let d = new Date();
+                        let datetime_string = d.getFullYear()+(d.getMonth()<10?"0":"")+d.getMonth()+(d.getDay()<10?"0":"")+d.getDay()+(d.getHours()<10?"0":"")+d.getHours()+(d.getMinutes()<10?"0":"")+d.getMinutes()+(d.getSeconds()<10?"0":"")+d.getSeconds();
+                        let reason_filename = user.name + datetime_string
+                        //
+                        const files = request.files as {
+                            [fieldname: string]: Express.Multer.File[];
+                        }
+                        let proof_image;
+                        Object.entries(files).map((value, index) => {
+                            let k = value[0]
+                            let v = value[1][0]
+                            if(k=="proof_photo")
+                                proof_image = v
+                        })
+                        console.log('[+] uploading reason file...')
+                        let res;
+                        if(proof_image) {
+                            res = await uploadFileToFirebase(proof_image, user.username, reason_filename);
+                            if(res.status && res.img_url != undefined) {
+                                return response.json({
+                                    status: true,
+                                    img_url: res.img_url,
+                                    message: 'success',
+                                });
+                            }else {
+                                return response.json({
+                                    status: false,
+                                    message: res.message
+                                });
+                            }
+                        }
+                        //
+                    }else {
+                        return response.json({
+                            status: false,
+                            message: 'unauthorized access (only for charities!)'
+                        })
+                    }
+                }else {
+                    console.log('in user profile else')
+                    return response.json({
+                        status: false,
+                        message: 'could not find user!'
+                    });
+                }
+            });
+        }
+    });
+}
+
 export async function updateProfile(request: Request, response: Response, next: NextFunction) {
     const userRepository = getRepository(User);
     const donerRepository = getRepository(Doners);

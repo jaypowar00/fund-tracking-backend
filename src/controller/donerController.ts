@@ -1,6 +1,6 @@
 import { getRepository } from "typeorm";
 import { NextFunction, Request, Response } from "express";
-import { Doners, User } from "../entity/User";
+import { Doners, User, UserRole } from "../entity/User";
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 
@@ -56,7 +56,7 @@ export class donerController {
     }
 
     async all(request: Request, response: Response, next: NextFunction) {
-        let doners = (await this.userRespository.find()).copyWithin(-1,-1);
+        let doners = (await this.userRespository.find({userRole: UserRole.DONER})).copyWithin(-1,-1);
         doners.forEach((doner, index) => {
             delete doner.password
         });

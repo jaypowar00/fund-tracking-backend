@@ -340,7 +340,6 @@ export class userController {
                             message: 'could not find user!'
                         });
                     }
-                
 
                 }, (err) => {
                     return response.json({

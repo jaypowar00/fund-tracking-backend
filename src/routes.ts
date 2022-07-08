@@ -105,4 +105,11 @@ export const Routes = [
         //     controller: userController,
         //     action: "uploadCharityFiles"
         // },
+        // Charity reason upload getway
+        {
+            method: "post",
+            route: "/user/upload/reason_proof",
+            controller: userController,
+            action: "uploadReasonProof"
+        },
 ];
