@@ -87,7 +87,7 @@ export class donerController {
                     message: err.message
                 })
             }
-            if (user.ac_type !== "doner") {
+            if (user['ac_type'] !== "doner") {
                 return response.json({
                     status: false,
                     message: 'Unauthorized Access'
@@ -100,7 +100,7 @@ export class donerController {
                     })
                 else {
                     let donerData;
-                    this.userRespository.findOne(user.doner_id).then(doner => {
+                    this.userRespository.findOne(user['doner_id']).then(doner => {
                         donerData = doner
                         delete donerData['password'];
                         return response.json({
@@ -270,7 +270,7 @@ export class donerController {
                     message: err.message
                 })
             }
-            if (user.ac_type !== "doner") {
+            if (user['ac_type'] !== "doner") {
                 return response.json({
                     status: false,
                     message: 'Unauthorized Access'
@@ -283,7 +283,7 @@ export class donerController {
                     });
                 else {
                     let donerData;
-                    this.userRespository.findOne(user.doner_id).then(doner => {donerData = doner});
+                    this.userRespository.findOne(user['doner_id']).then(doner => {donerData = doner});
                     if (!blackListedTokens.includes(token))
                         blackListedTokens.push(token);
                     return response.json({
@@ -316,7 +316,7 @@ export class donerController {
                     message: err.message
                 })
             }
-            if (user.ac_type !== "doner") {
+            if (user['ac_type'] !== "doner") {
                 return response.json({
                     status: false,
                     message: 'Unauthorized Access'
@@ -328,7 +328,7 @@ export class donerController {
                         message: 'you have been logged out, please login again!'
                     });
                 else {
-                    this.userRespository.findOne(user.doner_id).then((doner) => {
+                    this.userRespository.findOne(user['doner_id']).then((doner) => {
                         this.userRespository.remove(doner).then((res) => {
                             return response.json({
                                 status: true,

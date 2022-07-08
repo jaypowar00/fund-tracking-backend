@@ -10,7 +10,7 @@ const upload = multer({storage: storage}).fields([
   ])
 
 const upload2 = multer({storage: storage}).fields([
-    { name: 'proof_photo', maxCount: 1 },
+    { name: 'proof_photo', maxCount: 1 }
   ])
 
 export const uploadRouter = express.Router();
