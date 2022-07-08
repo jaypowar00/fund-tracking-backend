@@ -195,7 +195,7 @@ export async function userRegister(request: Request, response: Response, next: N
     });
 }
 
-export async function uploadReasonPhoto(request: Request, response: Response, next: NextFunction) {
+export async function uploadReasonFile(request: Request, response: Response, next: NextFunction) {
 
     // jwt verification
     const authHeader = request.headers['authorization']

@@ -20,12 +20,12 @@ export const Routes = [
         controller: userController,
         action: "getProfile"
     },
-    // {
-    //     method: "put",
-    //     route: "/user/profile",
-    //     controller: userController,
-    //     action: "updateProfile"
-    // },
+    {
+        method: "put",
+        route: "/user/profile",
+        controller: userController,
+        action: "updateProfile"
+    },
     //Admin Routes
     {
         method: "get",
