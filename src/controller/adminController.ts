@@ -39,7 +39,7 @@ export class adminController {
                     message: 'you are not logged in, please login and try again later'
                 });
             else {
-                this.userRespository.findOne(user.user_id).then(user => {
+                this.userRespository.findOne(user['user_id']).then(user => {
                     if(!user) {
                         return response.json({
                             status: false,
@@ -99,7 +99,7 @@ export class adminController {
                     message: 'you are not logged in, please login and try again later'
                 });
             else {
-                this.userRespository.findOne(user.user_id).then(user => {
+                this.userRespository.findOne(user['user_id']).then(user => {
                     if(!user) {
                         return response.json({
                             status: false,
