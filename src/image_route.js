@@ -1,5 +1,6 @@
 import * as express from "express"
-import * as multer from "multer";
+// import * as multer from "multer";
+const multer = require("multer");
 import { uploadReasonFile, userRegister, updateTaxCertificate, updateProfilePhoto, updateProfile } from "./controller/uploadHandler";
 
 const storage = multer.memoryStorage();

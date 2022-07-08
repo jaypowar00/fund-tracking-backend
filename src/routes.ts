@@ -112,10 +112,10 @@ export const Routes = [
             controller: userController,
             action: "uploadReasonProof"
         },
-        // {
-        //     method: "get",
-        //     route: "/doner/donations",
-        //     controller: donerController,
-        //     action: "getUserDonations"
-        // },
+        {
+            method: "get",
+            route: "/doner/donations",
+            controller: donerController,
+            action: "getUserDonations"
+        },
 ];

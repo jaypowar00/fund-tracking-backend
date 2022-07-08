@@ -1,9 +1,10 @@
 import "reflect-metadata";
 import {createConnection} from "typeorm";
-import * as express from "express";
+// import * as express from "express";
+import express = require("express");
 import {Request, Response} from "express";
 import {Routes} from "./routes";
-import * as cors from "cors";
+import cors = require("cors");
 import { uploadRouter } from "./image_route";
 require('dotenv/config');
 

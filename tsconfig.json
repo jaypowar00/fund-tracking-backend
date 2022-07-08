@@ -12,6 +12,7 @@
       "experimentalDecorators": true,
       "sourceMap": true,
       "allowJs": true,
-      "checkJs": false
+      "checkJs": false,
+      "esModuleInterop": true,
    }
 }
