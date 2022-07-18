@@ -68,6 +68,7 @@ export class userController {
     }
 
     async getAllCharity(request: Request, response: Response, next: NextFunction) {
+
         let charities = (await this.userRespository.find({where: {userRole: UserRole.CHARITY, charityDetails: { verified: CharityStatus.VERIFIED }} ,relations: ['charityDetails']}));
         charities.forEach((charity, index) => {
             delete charity.password
@@ -90,6 +91,15 @@ export class userController {
     async getOneCharity(request: Request, response: Response, next: NextFunction) {
 
         let charity = (await this.userRespository.findOne({where: {username: request.params.username}, relations: ['charityDetails']}));
+        delete charity.password
+        return {
+            status: true,
+            charity: charity
+        }
+    }
+    async getCharityById(request: Request, response: Response, next: NextFunction) {
+
+        let charity = (await this.userRespository.findOne({where: {user_id: request.params.id}, relations: ['charityDetails']}));
         delete charity.password
         return {
             status: true,

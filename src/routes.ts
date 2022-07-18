@@ -54,6 +54,11 @@ export const Routes = [
         route: "/charity/:username",
         controller: userController,
         action: "getOneCharity"
+    }, {
+        method: "get",
+        route: "/charity/id/:id",
+        controller: userController,
+        action: "getCharityById"
     },
     // {
     //     method: "get",
