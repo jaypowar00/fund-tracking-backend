@@ -118,4 +118,10 @@ export const Routes = [
             controller: donerController,
             action: "getUserDonations"
         },
+        {
+            method: "get",
+            route: "/donations/details/:id",
+            controller: donerController,
+            action: "getDonationDetails"
+        },
 ];
