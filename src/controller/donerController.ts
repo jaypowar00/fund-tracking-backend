@@ -150,39 +150,47 @@ export class donerController {
                     })
                 else {
                     this.userRespository.findOne(user['user_id']).then(async(user) => {
-                        let web3 = new Web3("HTTP://avdhut.live:8545");
-                        let networkId = await web3.eth.net.getId();
-                        const fundEthData = controller.networks[networkId];
-                        let contract = new web3.eth.Contract(controller.abi, fundEthData.address);
-                        contract.methods.getDonationsOf(user.meta_wallet_address).call().then(res => {
-                            let donations = [];
-                            res.map(value => {
-                                donations.push({
-                                    donation_id: value["donation_id"],
-                                    from_address: value["from_address"],
-                                    to_address: value["to_address"],
-                                    eth_in_wei: value["eth_in_wei"],
-                                    date: value["date"],
-                                    anonymous_state: value["anonymous_state"],
-                                    doner: value["doner"],
-                                    donerId: value["donerId"],
-                                    charity: value["charity"],
-                                    charityId: value["charityId"],
-                                    donated: value["donated"],
+                        try{
+                            let web3 = new Web3("HTTP://avdhut.live:8545");
+                            let networkId = await web3.eth.net.getId();
+                            const fundEthData = controller.networks[networkId];
+                            let contract = new web3.eth.Contract(controller.abi, fundEthData.address);
+                            contract.methods.getDonationsOf(user.meta_wallet_address).call().then(res => {
+                                let donations = [];
+                                res.map(value => {
+                                    donations.push({
+                                        donation_id: value["donation_id"],
+                                        from_address: value["from_address"],
+                                        to_address: value["to_address"],
+                                        eth_in_wei: value["eth_in_wei"],
+                                        date: value["date"],
+                                        anonymous_state: value["anonymous_state"],
+                                        doner: value["doner"],
+                                        donerId: value["donerId"],
+                                        charity: value["charity"],
+                                        charityId: value["charityId"],
+                                        donated: value["donated"],
+                                    });
+                                    return null;
                                 });
-                                return null;
-                            });
-                            donations.reverse();
-                            return response.json({
-                                status: true,
-                                donations: donations
-                            });
-                        }).catch(err => {
+                                donations.reverse();
+                                return response.json({
+                                    status: true,
+                                    donations: donations
+                                });
+                            }).catch(err => {
+                                return response.json({
+                                    status: false,
+                                    message: 'Something went wrong ('+err.message+')'
+                                });
+                            })
+                        }catch(err) {
+                            console.log(err)
                             return response.json({
                                 status: false,
-                                message: 'Something went wrong ('+err.message+')'
+                                message: 'something went wront ('+err.message+')'
                             });
-                        })
+                        }
                     }).catch(err => {
                         return response.json({
                             status: false,
@@ -195,30 +203,19 @@ export class donerController {
     }
     async getDonationDetails(request: Request, response: Response, next: NextFunction) {
         const { id } = request.params;
-        console.log('request.params')
-        console.log(request.params)
-        console.log('id')
-        console.log(id)
-        if(!id) {
+        if(!id)
             return response.json({
                 status: false,
                 message: 'url parameter missing!'
             });
-        }
-        console.log('-4')
-        let web3 = new Web3("HTTP://avdhut.live:8545");
-        console.log('-3')
-        let networkId = await web3.eth.net.getId();
-        console.log('-2')
-        const fundEthData = controller.networks[networkId];
-        console.log('-1')
-        let contract = new web3.eth.Contract(controller.abi, fundEthData.address);
-        console.log('0')
-        contract.methods.getDonationByID(id).call().then(value => {
-            console.log('1')
-            console.log(value)
-            console.log('2')
-            let data = {
+        try{
+
+            let web3 = new Web3("HTTP://avdhut.live:8545");
+            let networkId = await web3.eth.net.getId();
+            const fundEthData = controller.networks[networkId];
+            let contract = new web3.eth.Contract(controller.abi, fundEthData.address);
+            contract.methods.getDonationByID(id).call().then(value => {
+                let data = {
                 donation_id: value["donation_id"],
                 from_address: value["from_address"],
                 to_address: value["to_address"],
@@ -237,6 +234,13 @@ export class donerController {
                 message: 'success'
             });
         });
+    }catch(err) {
+        console.log(err)
+        return response.json({
+            status: false,
+            message: 'something went wrong ('+err.message+')'
+        });
+    }
     }
 
     async register(request: Request, response: Response, next: NextFunction) {
