@@ -151,7 +151,7 @@ export class donerController {
                 else {
                     this.userRespository.findOne(user['user_id']).then(async(user) => {
                         try{
-                            let web3 = new Web3("HTTP://avdhut.live:8545");
+                            let web3 = new Web3(process.env.INFURA_API_KEY);
                             let networkId = await web3.eth.net.getId();
                             const fundEthData = controller.networks[networkId];
                             let contract = new web3.eth.Contract(controller.abi, fundEthData.address);
@@ -210,7 +210,7 @@ export class donerController {
             });
         try{
 
-            let web3 = new Web3("HTTP://avdhut.live:8545");
+            let web3 = new Web3(process.env.INFURA_API_KEY);
             let networkId = await web3.eth.net.getId();
             const fundEthData = controller.networks[networkId];
             let contract = new web3.eth.Contract(controller.abi, fundEthData.address);
