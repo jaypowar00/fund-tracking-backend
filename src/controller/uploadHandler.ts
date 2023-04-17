@@ -107,8 +107,11 @@ export async function userRegister(request: Request, response: Response, next: N
         };
     console.log('[+] registering user')
     let res;
-    if(profile_image)
+    if(profile_image){
+        console.log("[+] uploading image")
         res = await uploadFileToFirebase(profile_image, username, 'profile_photo');
+        console.log("[+] image uploaded")
+    }
     userRepository.save({
         name: name,
         email: email,
@@ -124,8 +127,11 @@ export async function userRegister(request: Request, response: Response, next: N
         if(account_type == UserRole.CHARITY) {
             console.log('[+] registering charity')
             let res2;
-            if(profile_image)
+            if(tax_exc_cert) {
+                console.log("[+] uploading pdf")
                 res2 = await uploadFileToFirebase(tax_exc_cert, username, '80G_Certificate');
+                console.log("[+] pdf uploaded")
+            }
             charityRepository.save({
                 user: user,
                 founded_in: founded_in,

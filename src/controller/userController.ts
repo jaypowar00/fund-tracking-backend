@@ -4,8 +4,8 @@ import { NextFunction, Request, Response } from "express";
 import { User, CharityDetails, Doners, UserRole, CharityStatus, Expense, Donation } from "../entity/User";
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
-import firebase from "firebase";
-require('firebase/storage');
+import firebase from "firebase/compat/app";
+require('firebase/compat/storage');
 global.XMLHttpRequest = require("xhr2");
 import { firebaseConfig } from '../config';
 
