@@ -96,15 +96,15 @@ export async function userRegister(request: Request, response: Response, next: N
     let user1 = await userRepository.findOne({email: email});
     let user2 = await userRepository.findOne({username: username});
     if(user1)
-        return {
+        return response.json({
             status: false,
             message: 'email already taken'
-        };
+        });
     if(user2)
-        return {
+        return response.json({
             status: false,
             message: 'username already taken'
-        };
+        });
     console.log('[+] registering user')
     let res;
     if(profile_image){
@@ -141,7 +141,7 @@ export async function userRegister(request: Request, response: Response, next: N
             }).then((charity)=>{
                 return response.json({
                     status: true,
-                    message: 'Successfully Registered',
+                    message: res2.status?'Successfully Registered':'Successfully Registered (but pdf upload failed)',
                     access_token: generateUserAccessToken(user.user_id)
                 })
             }, (err) => {
